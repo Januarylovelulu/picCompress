@@ -1,0 +1,115 @@
+import QtQuick 2.13
+import QtQuick.Controls 2.13
+import QtQuick.Dialogs 1.2
+import QtQuick.Controls.Material 2.12
+import QmlCompressControl 1.0
+import "qrc:/controls"
+
+Page {
+    width: 600
+    height: 400
+
+    GridView {
+        id: imgControlView
+
+        anchors.fill: parent
+        cellHeight: 180
+        cellWidth: 160
+
+        // model和view，显示已导入的图片
+        model: qmlCompressControl.getImgPathNameList()
+        delegate: ImgComoressControl{
+            id: imgControl
+            width: 160
+            height: 160
+
+            Component.onCompleted: {
+                img.source = qmlCompressControl.getImgPathName(index);
+                fileName.text = "<b>"+qmlCompressControl.getImgName(index)+"</b>";
+            }
+        }
+
+        // 内部存有导入的图片的路径等信息，并提供压缩图片等接口
+        QmlCompressControl {
+            id: qmlCompressControl
+        }
+    }
+
+    DropArea {
+        anchors.fill: parent
+        Rectangle {
+            anchors.fill: parent
+            color: "gray"
+            opacity: 0.4
+
+            visible: parent.containsDrag
+
+            Text {
+                anchors.centerIn: parent
+
+                opacity: 1
+                text: "+"
+                font.bold: true
+                font.pixelSize: 166
+                color: parent.Material.theme === Material.Dark ? "white":"black"
+            }
+        }
+        onDropped: {
+            if(drop.hasUrls){
+                for(var i = 0; i < drop.urls.length; i++){
+                    addPictrue(drop.urls[i]);
+                }
+            }
+        }
+    }
+
+    footer: Item {
+        id: footRow
+        height: 50
+        width: parent.width
+
+        Button {
+            id: addPic
+            anchors.verticalCenter: parent.verticalCenter
+            x: 20
+            text: qsTr("添加图片")
+            FileDialog {
+                id:fds
+                title: "选择文件"
+                folder: shortcuts.desktop
+                selectExisting: true
+                selectFolder: false
+                selectMultiple: false
+                nameFilters: ["png文件 (*.png)"]
+                onAccepted: {
+                    addPictrue(fds.fileUrl.toString());
+                }
+            }
+            onClicked: {
+                fds.open();
+            }
+        }
+        Button {
+            id: addDir
+            anchors.verticalCenter: parent.verticalCenter
+            anchors.left: addPic.right
+            anchors.leftMargin: addPic.x
+            text: qsTr("添加文件夹")
+
+            onClicked: {
+                imgControlView.model--;
+            }
+        }
+    }
+
+    function addPictrue(name){
+        // 如果是png图片
+        if(qmlCompressControl.checkImage(name)){
+            // 如果列表里没有则添加
+            if(qmlCompressControl.getImgPathNameList().indexOf(name) === -1){
+                qmlCompressControl.push(name);
+                imgControlView.model = qmlCompressControl.getImgPathNameList();
+            }
+        }
+    }
+}

@@ -1,0 +1,18 @@
+<RCC>
+    <qresource prefix="/">
+        <file>main.qml</file>
+        <file>Page1Form.qml</file>
+        <file>Page2Form.qml</file>
+        <file>SwipeViewControl.qml</file>
+        <file>qtquickcontrols2.conf</file>
+    </qresource>
+    <qresource prefix="/controls">
+        <file>ImgComoressControl.qml</file>
+        <file>ImgEditControl.qml</file>
+        <file>MenuBarPage.qml</file>
+    </qresource>
+    <qresource prefix="/image">
+        <file alias="bgPicDark.png">../img/bgPicDark.png</file>
+        <file alias="bgPicLight.png">../img/bgPicLight.png</file>
+    </qresource>
+</RCC>
