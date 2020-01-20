@@ -3,7 +3,7 @@
 
 #include <QObject>
 
-const quint32 PNG_TITLE = 0X89504e47;
+const quint64 PNG_TITLE = 0x89504E470D0A1A0A;
 
 class PngCompress : public QObject
 {
@@ -20,7 +20,7 @@ public:
     // 参数为空时，获取class内的imgPathName
     QString getPathName(QString imgPathName = nullptr);
 
-    static bool isPng(QString imgPathName);
+    static bool isPng(QString &imgPathName);
 
 signals:
 

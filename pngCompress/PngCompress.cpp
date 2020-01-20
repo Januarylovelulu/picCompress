@@ -17,22 +17,41 @@ PngCompress::PngCompress(QString imgPathName)
 
 bool PngCompress::compress(QString imgPathName)
 {
-    if(imgPathName.isEmpty())
+    if(!isPng(imgPathName))
         return false;
-    QFile file(imgPathName.remove("file://"));
-    if (!file.open(QIODevice::ReadOnly | QIODevice::Text)){
+    QFile file(imgPathName);
+    if (!file.open(QIODevice::ReadOnly)){
         return false;
     }
     QDataStream in(&file);
-    quint32 n;
-    QImage p_w_picpath;
-    QMap<QString, QColor> map;
+    quint8 s;
+    QString str;
+    for (int x=0;x<8;x++) {
+        in>>s;
+        str+=QString::number(s)+" ";
+    }
+    qDebug()<<"";
+    qDebug()<<"文件署名 : "<<str;
 
-    in >> n >> p_w_picpath >> map;
-
-    qDebug()<<n;
-    qDebug()<<p_w_picpath;
-    qDebug()<<map;
+    while(!in.atEnd()){
+        qint32 tmp,useless;
+        in>>tmp>>useless;
+        QString str;
+        while(useless!=0){
+            QChar s=useless%256;
+            useless/=256;
+            str=s+str;
+        }
+        str+=" : ";
+        while(tmp!=0){
+            in>>s;
+            str+=QString::number(s)+" ";
+            tmp--;
+        }
+        qDebug()<<"";
+        qDebug()<<str;
+        in>>useless;
+    }
 
     file.close();
     return true;
@@ -49,11 +68,7 @@ QString PngCompress::getPathName(QString imgPathName)
 {
     if(!judgePath(imgPathName))
         return "";
-#ifdef Q_OS_UNIX
-    QFile file(imgPathName.remove("file://"));
-#else
-    QFile file(imgPathName.remove("file:///"));
-#endif
+
     if(isPng(imgPathName)){
         this->imgPathName = imgPathName;
         return imgPathName;
@@ -63,18 +78,18 @@ QString PngCompress::getPathName(QString imgPathName)
     }
 }
 
-bool PngCompress::isPng(QString imgPathName)
+bool PngCompress::isPng(QString &imgPathName)
 {
 #ifdef Q_OS_UNIX
     QFile file(imgPathName.remove("file://"));
 #else
     QFile file(imgPathName.remove("file:///"));
 #endif
-    if (!file.open(QIODevice::ReadOnly | QIODevice::Text)){
+    if (!file.open(QIODevice::ReadOnly)){
         return false;
     }
     QDataStream in(&file);
-    quint32 n;
+    quint64 n;
     in >> n;
     file.close();
     if(!(n==PNG_TITLE))
