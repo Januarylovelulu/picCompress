@@ -9,6 +9,24 @@ Page {
     width: 600
     height: 400
 
+    BusyIndicator {
+        id: busyIndicator
+        anchors.centerIn: parent
+        implicitWidth: parent.width
+        implicitHeight: implicitWidth
+        opacity: running ? 0.0 : 1.0
+        running: true
+        z: 10
+
+        Text {
+            id: busyText
+            anchors.centerIn: parent
+            font.pointSize: 15
+            color: root.Material.theme === Material.Dark ? "white": "black"
+        }
+        contentItem: MyBusyIndicator{}
+    }
+
     GridView {
         id: imgControlView
 
@@ -71,7 +89,7 @@ Page {
         Button {
             id: addPic
             anchors.verticalCenter: parent.verticalCenter
-            x: 20
+            x: 30
             text: qsTr("添加图片")
             FileDialog {
                 id:fds
@@ -98,6 +116,30 @@ Page {
 
             onClicked: {
                 imgControlView.model--;
+            }
+        }
+        Button {
+            id: compress
+            anchors.verticalCenter: parent.verticalCenter
+            x: parent.width-width-addPic.x
+            text: qsTr("开始压缩")
+
+            onClicked: {
+                if(qmlCompressControl.getImgPathNameList().length > 0){
+                    qmlCompressControl.compress();
+                }
+            }
+            Connections {
+                target: qmlCompressControl;
+                onReturnIsRuning:{
+                    compress.enabled = !isRuning;
+                    addDir.enabled = !isRuning;
+                    addPic.enabled = !isRuning;
+
+                    busyIndicator.running = !isRuning;
+
+                    busyText.text = "正在压缩图片\n压缩进度: " + now + " / " + total;
+                }
             }
         }
     }

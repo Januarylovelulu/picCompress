@@ -64,11 +64,13 @@ Page {
             width: height
             flat: true
             onClicked: {
-                tabBar.addItem(tabButton.createObject(tabBar))
-                tabBar.currentIndex = tabBar.count - 1
+                if(tabBar.itemAt(tabBar.count-1).text !=="标签"){
+                    tabBar.addItem(tabButton.createObject(tabBar))
+                    tabBar.currentIndex = tabBar.count - 1
 
-                stackLayout.creatItem();
-                stackLayout.currentIndex = stackLayout.count - 1
+                    stackLayout.creatItem();
+                    stackLayout.currentIndex = stackLayout.count - 1
+                }
             }
         }
     }

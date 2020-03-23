@@ -2,6 +2,7 @@ INCLUDEPATH *= \
     $$PWD/
 
 HEADERS *= \
+    $$PWD/ImgControlBase.h \
     $$PWD/QmlCompressControl.h
 
 SOURCES *= \

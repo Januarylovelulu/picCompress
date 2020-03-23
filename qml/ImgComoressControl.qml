@@ -16,6 +16,7 @@ Item {
         fillMode: Image.PreserveAspectFit
     }
 
+
     Text {
         id: fileName
         height: 20

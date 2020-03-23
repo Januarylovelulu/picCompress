@@ -10,6 +10,7 @@
         <file>ImgComoressControl.qml</file>
         <file>ImgEditControl.qml</file>
         <file>MenuBarPage.qml</file>
+        <file>MyBusyIndicator.qml</file>
     </qresource>
     <qresource prefix="/image">
         <file alias="bgPicDark.png">../img/bgPicDark.png</file>

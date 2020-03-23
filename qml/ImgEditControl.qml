@@ -7,6 +7,9 @@ import QtQuick.Controls.Material 2.12
 Item{
     id: imgControl
 
+    width: parent.width
+    height: parent.height
+
     property string picPath: ""
 
     clip: true
@@ -15,7 +18,8 @@ Item{
         id: imgControlButton
         //        flat: true
         anchors.centerIn: parent
-        text: qsTr("选择图片")
+        text: qsTr("选择或拖入图片")
+        z: 50
 
         FileDialog {
             id:fds
@@ -26,12 +30,7 @@ Item{
             selectMultiple: false
             nameFilters: ["png文件 (*.png)"]
             onAccepted: {
-                picPath = fds.fileUrl;
-                imgControlButton.visible = false;
-                img.visible = true;
-
-                var picNameTmp=picPath.split("/")
-                tabBar.itemAt(tabBar.currentIndex).text = picNameTmp[picNameTmp.length-1]
+                addPicture(fds.fileUrl);
             }
             onRejected: {
                 picPath = "";
@@ -54,10 +53,38 @@ Item{
         id: img
         visible: false
 //        anchors.fill: parent
-        width: parent.width
-        height: parent.height
+        x: imgControl.width/2-width/2
+        y: imgControl.height/2-height/2
         fillMode: Image.PreserveAspectFit
         source: picPath
+        z: 1
+    }
+
+    // 快速拖入图片
+    DropArea {
+        anchors.fill: parent
+        Rectangle {
+            anchors.fill: parent
+            color: "gray"
+            opacity: 0.4
+
+            visible: parent.containsDrag
+
+            Text {
+                anchors.centerIn: parent
+
+                opacity: 1
+                text: "+"
+                font.bold: true
+                font.pixelSize: 166
+                color: parent.Material.theme === Material.Dark ? "white":"black"
+            }
+        }
+        onDropped: {
+            if(drop.hasUrls){
+                addPicture(drop.urls[0]);
+            }
+        }
     }
 
     // 旋转缩放图片
@@ -68,6 +95,7 @@ Item{
         pinch.maximumScale: 4
         pinch.minimumScale: 0.5
         pinch.target: img
+        pinch.dragAxis:Pinch.XAndYAxis
 
         PropertyAnimation {
             id: animation
@@ -100,5 +128,41 @@ Item{
             animation.running = true;
             pinch.accepted = false;
         }
+    }
+
+    // 拖拽图片
+    MouseArea {
+        anchors.fill: img
+        drag.target: img
+        z: 4
+//        drag.axis: Drag.XAndYAxis
+        //这里使图片不管是比显示框大还是比显示框小都不会被拖拽出显示区域
+        drag.minimumX: (img.width > imgControl.width) ? (imgControl.width - img.width) : 0
+        drag.minimumY: (img.height > imgControl.height) ? (imgControl.height - img.height) : 0
+        drag.maximumX: (img.width > imgControl.width) ? 0 : (imgControl.width - img.width)
+        drag.maximumY: (img.height > imgControl.height) ? 0 : (imgControl.height - img.height)
+
+        //使用鼠标滚轮缩放
+//        onWheel: {
+//            //每次滚动都是120的倍数
+//            var datla = wheel.angleDelta.y/120;
+//            if(datla > 0)
+//            {
+//                img.scale = img.scale/0.9
+//            }
+//            else
+//            {
+//                img.scale = img.scale*0.9
+//            }
+//        }
+    }
+
+    function addPicture(path){
+        picPath = path;
+        imgControlButton.visible = false;
+        img.visible = true;
+
+        var picNameTmp=picPath.split("/")
+        tabBar.itemAt(tabBar.currentIndex).text = picNameTmp[picNameTmp.length-1]
     }
 }

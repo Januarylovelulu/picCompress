@@ -2,6 +2,8 @@
 #define QMLCOMPRESSCONTROL_H
 
 #include <QObject>
+#include <QVector>
+#include "ImgControlBase.h"
 #include "PngCompress.h"
 
 class QmlCompressControl : public QObject
@@ -24,8 +26,18 @@ public:
     // 全路径转图片名，如果不是png返回空，是png返回图片名称
     Q_INVOKABLE QString pathNameToName(QString imgPathName);
 
+    Q_INVOKABLE bool compress();
+
+signals:
+    void returnIsRuning(const bool &isRuning, const int now, const int total);
+
+protected:
+    void on_deleteImgControl();
+
 private:
     QStringList imgPathNameList;
+
+    QVector<ImgControlBase*> vPngCompress;
 };
 
 #endif // QMLCOMPRESSCONTROL_H
