@@ -3,12 +3,22 @@
 
 #include <QObject>
 #include <QThread>
+#include <QDebug>
 
 class ImgControlBase : public QThread
 {
     Q_OBJECT
+
 public:
+    enum ImgType {
+            PNG = 1,
+            JPG = 2,
+            UNDEFINE
+        };
+        Q_ENUM(ImgType)
+
     explicit ImgControlBase(){}
+    virtual ~ImgControlBase(){}
 
     virtual bool compress(QString imgPathName) = 0;
     virtual bool checkImage(QString imgPathName) = 0;
@@ -30,6 +40,20 @@ public:
             pathName.remove(find,pathName.size()-find);
         }
         return pathName;
+    }
+
+    // 获取图片类型，映射枚举
+    static ImgType getImgType(QString pathName){
+        if(pathName.isEmpty() || !pathName.contains('.')){
+            return ImgType::UNDEFINE;
+        }
+        pathName = pathName.split('.').back().toLower();
+        if(pathName == "png")
+            return ImgControlBase::PNG;
+        else if(pathName == "jpg" || pathName == "jpeg")
+            return ImgControlBase::JPG;
+        else
+            return ImgControlBase::UNDEFINE;
     }
 };
 

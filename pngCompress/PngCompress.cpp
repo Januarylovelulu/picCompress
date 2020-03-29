@@ -87,9 +87,8 @@ bool PngCompress::savePng(QString imgPathName)
 
 bool PngCompress::checkImage(QString imgPathName)
 {
-    if(isPng(imgPathName)){
+    if(isPng(imgPathName))
         return true;
-    }
     else
         return false;
 }

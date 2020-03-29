@@ -5,6 +5,7 @@
 #include <QVector>
 #include "ImgControlBase.h"
 #include "PngCompress.h"
+#include "JpgCompress.h"
 
 class QmlCompressControl : public QObject
 {

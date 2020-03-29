@@ -56,6 +56,7 @@ Item{
         x: imgControl.width/2-width/2
         y: imgControl.height/2-height/2
         fillMode: Image.PreserveAspectFit
+        mirror: false
         source: picPath
         z: 1
     }
@@ -81,7 +82,7 @@ Item{
             }
         }
         onDropped: {
-            if(drop.hasUrls){
+            if(drop.hasUrls && img.source == ""){
                 addPicture(drop.urls[0]);
             }
         }
@@ -92,8 +93,8 @@ Item{
         anchors.fill: parent
         pinch.maximumRotation: 360
         pinch.minimumRotation: -360
-        pinch.maximumScale: 4
-        pinch.minimumScale: 0.5
+        pinch.maximumScale: 5
+        pinch.minimumScale: 0.1
         pinch.target: img
         pinch.dragAxis:Pinch.XAndYAxis
 
@@ -137,24 +138,37 @@ Item{
         z: 4
 //        drag.axis: Drag.XAndYAxis
         //这里使图片不管是比显示框大还是比显示框小都不会被拖拽出显示区域
-        drag.minimumX: (img.width > imgControl.width) ? (imgControl.width - img.width) : 0
-        drag.minimumY: (img.height > imgControl.height) ? (imgControl.height - img.height) : 0
-        drag.maximumX: (img.width > imgControl.width) ? 0 : (imgControl.width - img.width)
-        drag.maximumY: (img.height > imgControl.height) ? 0 : (imgControl.height - img.height)
+//        drag.minimumX: (img.width > imgControl.width) ? (imgControl.width - img.width) : 0
+//        drag.minimumY: (img.height > imgControl.height) ? (imgControl.height - img.height) : 0
+//        drag.maximumX: (img.width > imgControl.width) ? 0 : (imgControl.width - img.width)
+//        drag.maximumY: (img.height > imgControl.height) ? 0 : (imgControl.height - img.height)
+
+        onDoubleClicked: {
+            console.log(img.width+" "+img.height+"   "+imgControl.width+" "+imgControl.height)
+            console.log(img.x+" "+img.y+"   "+imgControl.x+" "+imgControl.y)
+            console.log(img.scale)
+        }
 
         //使用鼠标滚轮缩放
-//        onWheel: {
-//            //每次滚动都是120的倍数
-//            var datla = wheel.angleDelta.y/120;
-//            if(datla > 0)
-//            {
-//                img.scale = img.scale/0.9
-//            }
-//            else
-//            {
-//                img.scale = img.scale*0.9
-//            }
-//        }
+        onWheel: {
+            //每次滚动都是120的倍数
+            var zoom = 0.96
+            var datla = wheel.angleDelta.y/120;
+            if(datla > 0)
+            {
+                if(img.scale/zoom<=5)
+                    img.scale = img.scale/zoom
+                else
+                    img.scale = 5
+            }
+            else
+            {
+                if(img.scale*zoom>=0.1)
+                    img.scale = img.scale*zoom
+                else
+                    img.scale = 0.1
+            }
+        }
     }
 
     function addPicture(path){

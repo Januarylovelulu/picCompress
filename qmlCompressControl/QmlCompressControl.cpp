@@ -40,7 +40,10 @@ void QmlCompressControl::clear()
 bool QmlCompressControl::checkImage(QString imgPathName)
 {
     // 如果名称为空或者不是png文件
-    if(PngCompress::isPng(imgPathName)){
+    if(ImgControlBase::getImgType(imgPathName)==ImgControlBase::PNG && PngCompress::isPng(imgPathName)){
+        return true;
+    }
+    else if(ImgControlBase::getImgType(imgPathName)==ImgControlBase::JPG && JpgCompress::isJPG(imgPathName)){
         return true;
     }
     else{
@@ -60,9 +63,14 @@ bool QmlCompressControl::compress()
 
     returnIsRuning(true, 0, imgPathNameList.size());
     for(QString imgNamePath : imgPathNameList){
-        ImgControlBase *pngCompress = new PngCompress(imgNamePath);
-        connect(pngCompress,&ImgControlBase::finished,this,&QmlCompressControl::on_deleteImgControl);
-        vPngCompress.push_back(pngCompress);
+        ImgControlBase *imgCompressBase;
+        switch (ImgControlBase::getImgType(imgNamePath)) {
+            case ImgControlBase::PNG : imgCompressBase = new PngCompress(imgNamePath);break;
+            case ImgControlBase::JPG : imgCompressBase = new JpgCompress(imgNamePath);break;
+            default:;
+        }
+        connect(imgCompressBase,&ImgControlBase::finished,this,&QmlCompressControl::on_deleteImgControl);
+        vPngCompress.push_back(imgCompressBase);
         vPngCompress.last()->start();
     }
     return true;
@@ -70,10 +78,10 @@ bool QmlCompressControl::compress()
 
 void QmlCompressControl::on_deleteImgControl()
 {
-    ImgControlBase *pngCompress=qobject_cast<ImgControlBase*>(sender());
-    delete pngCompress;
+    ImgControlBase *imgCompressBase=qobject_cast<ImgControlBase*>(sender());
+    delete imgCompressBase;
     for(auto &p : vPngCompress){
-        if(p == pngCompress)
+        if(p == imgCompressBase)
             p = nullptr;
     }
     int now = 0;

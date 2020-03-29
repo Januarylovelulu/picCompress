@@ -137,7 +137,6 @@ Page {
                     addPic.enabled = !isRuning;
 
                     busyIndicator.running = !isRuning;
-
                     busyText.text = "正在压缩图片\n压缩进度: " + now + " / " + total;
                 }
             }
@@ -145,7 +144,7 @@ Page {
     }
 
     function addPictrue(name){
-        // 如果是png图片
+        // 如果是规定图片
         if(qmlCompressControl.checkImage(name)){
             // 如果列表里没有则添加
             if(qmlCompressControl.getImgPathNameList().indexOf(name) === -1){
