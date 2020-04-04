@@ -13,7 +13,7 @@ public:
     enum ImgType {
             PNG = 1,
             JPG = 2,
-            UNDEFINE
+            UNDEFINE = 0
         };
         Q_ENUM(ImgType)
 
@@ -24,12 +24,22 @@ public:
     virtual bool checkImage(QString imgPathName) = 0;
 
 protected:
-    virtual void initialData() = 0;
+    virtual bool initialData() = 0;
     virtual void run() = 0;
 
 signals:
 
 public:
+    // 将qml的路径转换成qt可用的路径
+    static QString qmlPath_to_QtPath(QString imgPathName){
+        #ifdef Q_OS_UNIX
+            imgPathName.remove("file://");
+        #else
+            imgPathName.remove("file:///");
+        #endif
+        return imgPathName;
+    }
+
     // 将绝对路径取名字，hideSuffix判断是否删除后缀名
     static QString pathNameToName(QString pathName, bool hideSuffix = false){
         if(pathName.isEmpty())

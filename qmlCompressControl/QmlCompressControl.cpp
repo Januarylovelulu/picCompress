@@ -40,10 +40,10 @@ void QmlCompressControl::clear()
 bool QmlCompressControl::checkImage(QString imgPathName)
 {
     // 如果名称为空或者不是png文件
-    if(ImgControlBase::getImgType(imgPathName)==ImgControlBase::PNG && PngCompress::isPng(imgPathName)){
+    if(ImgControlBase::getImgType(imgPathName)==ImgControlBase::PNG && PngCompress::isPng(ImgControlBase::qmlPath_to_QtPath(imgPathName))){
         return true;
     }
-    else if(ImgControlBase::getImgType(imgPathName)==ImgControlBase::JPG && JpgCompress::isJPG(imgPathName)){
+    else if(ImgControlBase::getImgType(imgPathName)==ImgControlBase::JPG && JpgCompress::isJPG(ImgControlBase::qmlPath_to_QtPath(imgPathName))){
         return true;
     }
     else{
@@ -62,16 +62,16 @@ bool QmlCompressControl::compress()
         return false;
 
     returnIsRuning(true, 0, imgPathNameList.size());
-    for(QString imgNamePath : imgPathNameList){
+    for(QString imgPathName : imgPathNameList){
         ImgControlBase *imgCompressBase;
-        switch (ImgControlBase::getImgType(imgNamePath)) {
-            case ImgControlBase::PNG : imgCompressBase = new PngCompress(imgNamePath);break;
-            case ImgControlBase::JPG : imgCompressBase = new JpgCompress(imgNamePath);break;
+        switch (ImgControlBase::getImgType(imgPathName)) {
+            case ImgControlBase::PNG : imgCompressBase = new PngCompress(ImgControlBase::qmlPath_to_QtPath(imgPathName));break;
+            case ImgControlBase::JPG : imgCompressBase = new JpgCompress(ImgControlBase::qmlPath_to_QtPath(imgPathName));break;
             default:;
         }
         connect(imgCompressBase,&ImgControlBase::finished,this,&QmlCompressControl::on_deleteImgControl);
-        vPngCompress.push_back(imgCompressBase);
-        vPngCompress.last()->start();
+        vImgCompress.push_back(imgCompressBase);
+        vImgCompress.last()->start();
     }
     return true;
 }
@@ -80,19 +80,19 @@ void QmlCompressControl::on_deleteImgControl()
 {
     ImgControlBase *imgCompressBase=qobject_cast<ImgControlBase*>(sender());
     delete imgCompressBase;
-    for(auto &p : vPngCompress){
+    for(auto &p : vImgCompress){
         if(p == imgCompressBase)
             p = nullptr;
     }
     int now = 0;
-    for (int x=0;x<vPngCompress.size();x++) {
-        if(!vPngCompress[x]) // 如果压缩完成
+    for (int x=0;x<vImgCompress.size();x++) {
+        if(!vImgCompress[x]) // 如果压缩完成
             now++;
     }
 
     if(now == imgPathNameList.size()){
         returnIsRuning(false, now, imgPathNameList.size());
-        vPngCompress.clear();
+        vImgCompress.clear();
     }
     else{
         returnIsRuning(true, now, imgPathNameList.size());

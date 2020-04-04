@@ -38,7 +38,7 @@ protected:
 private:
     QStringList imgPathNameList;
 
-    QVector<ImgControlBase*> vPngCompress;
+    QVector<ImgControlBase*> vImgCompress;
 };
 
 #endif // QMLCOMPRESSCONTROL_H

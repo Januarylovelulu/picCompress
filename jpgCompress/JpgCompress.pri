@@ -2,7 +2,9 @@ INCLUDEPATH *= \
     $$PWD/
 
 HEADERS *= \
-    $$PWD/JpgCompress.h
+    $$PWD/Dct.h \
+    $$PWD/JpgCompress.h \
+    $$PWD/Quantify.h
 
 SOURCES *= \
     $$PWD/JpgCompress.cpp

@@ -54,13 +54,9 @@ void PngCompress::setPathName(QString imgPathName)
     }
 }
 
-bool PngCompress::isPng(QString &imgPathName)
+bool PngCompress::isPng(QString imgPathName)
 {
-#ifdef Q_OS_UNIX
-    QFile file(imgPathName.remove("file://"));
-#else
-    QFile file(imgPathName.remove("file:///"));
-#endif
+    QFile file(imgPathName);
     if (!file.open(QIODevice::ReadOnly)){
         return false;
     }
@@ -143,14 +139,15 @@ bool PngCompress::readPng(QString imgPathName)
     return true;
 }
 
-void PngCompress::initialData()
+bool PngCompress::initialData()
 {
-
+    return true;
 }
 
 void PngCompress::run()
 {
-    initialData();
+    if(!initialData())
+        return ;
     compress(imgPathName);
 }
 

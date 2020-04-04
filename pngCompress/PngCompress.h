@@ -23,7 +23,7 @@ public:
     QString getPathName();
     void setPathName(QString imgPathName);
 
-    static bool isPng(QString &imgPathName);
+    static bool isPng(QString imgPathName);
 
     bool savePng(QString imgPathName);
 
@@ -32,7 +32,7 @@ public:
 protected:
     bool readPng(QString imgPathName = "");
 
-    void initialData();
+    bool initialData();
     void run();
 
 private:

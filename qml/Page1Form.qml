@@ -98,7 +98,7 @@ Page {
                 selectExisting: true
                 selectFolder: false
                 selectMultiple: false
-                nameFilters: ["png文件 (*.png)"]
+                nameFilters: ["图片文件 (*.png *.jpg *.jpeg)"]
                 onAccepted: {
                     addPictrue(fds.fileUrl.toString());
                 }
