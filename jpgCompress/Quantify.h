@@ -29,7 +29,7 @@ const int C[NUM][NUM] =
     {99,99,99,99,99,99,99,99},
     {99,99,99,99,99,99,99,99},
     {99,99,99,99,99,99,99,99},
-    {99,99,99,99,99,99,99,99},
+    {99,99,99,99,99,99,99,99}
 };
 
 class Quantify{
@@ -40,12 +40,12 @@ public:
             for (int b=0;b<color[0].size();b+=NUM) {
                 for (int x=0;x<NUM;x++) {
                     for (int y=0;y<NUM;y++) {
-                        double t = color[x][y][0]/Y[x][y];
-                        color[x][y][0] = t >= 0 ? int(t+0.5) : int(t-0.5);
-                        t = color[x][y][1]/C[x][y];
-                        color[x][y][1] = t >= 0 ? int(t+0.5) : int(t-0.5);
-                        t = color[x][y][2]/C[x][y];
-                        color[x][y][2] = t >= 0 ? int(t+0.5) : int(t-0.5);
+                        double t = color[x+a][y+b][0]/Y[x][y];
+                        color[x+a][y+b][0] = t >= 0 ? int(t+0.5) : int(t-0.5);
+                        t = color[x+a][y+b][1]/C[x][y];
+                        color[x+a][y+b][1] = t >= 0 ? int(t+0.5) : int(t-0.5);
+                        t = color[x+a][y+b][2]/C[x][y];
+                        color[x+a][y+b][2] = t >= 0 ? int(t+0.5) : int(t-0.5);
                     }
                 }
             }

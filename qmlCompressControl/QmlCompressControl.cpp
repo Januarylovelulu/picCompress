@@ -46,6 +46,9 @@ bool QmlCompressControl::checkImage(QString imgPathName)
     else if(ImgControlBase::getImgType(imgPathName)==ImgControlBase::JPG && JpgCompress::isJPG(ImgControlBase::qmlPath_to_QtPath(imgPathName))){
         return true;
     }
+    else if(ImgControlBase::getImgType(imgPathName)==ImgControlBase::BMP){
+        return true;
+    }
     else{
         return false;
     }
@@ -67,6 +70,7 @@ bool QmlCompressControl::compress()
         switch (ImgControlBase::getImgType(imgPathName)) {
             case ImgControlBase::PNG : imgCompressBase = new PngCompress(ImgControlBase::qmlPath_to_QtPath(imgPathName));break;
             case ImgControlBase::JPG : imgCompressBase = new JpgCompress(ImgControlBase::qmlPath_to_QtPath(imgPathName));break;
+            case ImgControlBase::BMP : imgCompressBase = new JpgCompress(ImgControlBase::qmlPath_to_QtPath(imgPathName));break;
             default:;
         }
         connect(imgCompressBase,&ImgControlBase::finished,this,&QmlCompressControl::on_deleteImgControl);

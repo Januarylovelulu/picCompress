@@ -134,7 +134,6 @@ bool JpgCompress::compress(QString imgPathName)
     Q_UNUSED(imgPathName);
     QTime time;
     time.start();
-//    jpg->save(imgPathName.replace(".jpg","_compress.jpg",Qt::CaseInsensitive).replace(".jpeg","_compress.jpeg",Qt::CaseInsensitive),"JPG",60);
 
     QByteArray ba = imgPathName.toLatin1();
     const char* inputFileName = ba.data();

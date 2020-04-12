@@ -13,6 +13,7 @@ public:
     enum ImgType {
             PNG = 1,
             JPG = 2,
+            BMP = 3,
             UNDEFINE = 0
         };
         Q_ENUM(ImgType)
@@ -62,6 +63,8 @@ public:
             return ImgControlBase::PNG;
         else if(pathName == "jpg" || pathName == "jpeg")
             return ImgControlBase::JPG;
+        else if(pathName == "bmp")
+            return ImgControlBase::BMP;
         else
             return ImgControlBase::UNDEFINE;
     }

@@ -83,6 +83,7 @@ public:
                         tmpArr[k][l][2] = t >= 0 ? int(t+0.5) : int(t-0.5);
                     }
                 }
+                // 将结果保存到color
                 for(int a=0;a<NUM;a++){
                     for (int b=0;b<NUM;b++) {
                         color[a+x][b+y][0] = tmpArr[a][b][0];

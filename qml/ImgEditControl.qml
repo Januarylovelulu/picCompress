@@ -28,7 +28,7 @@ Item{
             selectExisting: true
             selectFolder: false
             selectMultiple: false
-            nameFilters: ["png文件 (*.png)"]
+            nameFilters: ["图片文件 (*.png *.jpg *.jpeg *.bmp)"]
             onAccepted: {
                 addPicture(fds.fileUrl);
             }
