@@ -77,6 +77,7 @@ bool PngCompress::savePng(QString imgPathName)
         return false;
     }
     QDataStream out(&file);
+    file.close();
 
     return true;
 }

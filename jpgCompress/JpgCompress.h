@@ -22,23 +22,15 @@ public:
 
     static bool isJPG(QString imgPathName);
 
-    /** 清理数据 */
     void clean(void);
 
-    /** 读取jpg图片，并 */
     bool readJpg(QString imgPathName);
 
-    /** 压缩到jpg文件中，quality_scale表示质量，取值范围(0,100), 数字越大压缩比例越高*/
-    bool encodeToJPG(QString imgPathName, int quality_scale);
+    bool encodeToJPG(QString imgPathName, int quality);
 
 protected:
     bool initialData();
     void run();
-
-private:
-    QString imgPathName;
-
-    bool judgePath(QString &imgPathName);
 
 private:
     int				m_width;
@@ -78,6 +70,11 @@ private:
     void _write_word_(unsigned short value, FILE* fp);
     void _write_bitstring_(const BitString* bs, int counts, int& newByte, int& newBytePos, FILE* fp);
     void _write_(const void* p, int byteSize, FILE* fp);
+
+private:
+    QString imgPathName;
+
+    bool judgePath(QString &imgPathName);
 };
 
 #endif // JPGCOMPRESS_H

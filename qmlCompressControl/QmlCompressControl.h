@@ -6,6 +6,7 @@
 #include "ImgControlBase.h"
 #include "PngCompress.h"
 #include "JpgCompress.h"
+#include "MyFile.h"
 
 class QmlCompressControl : public QObject
 {
@@ -18,8 +19,12 @@ public:
     Q_INVOKABLE QString getImgPathName(int index);
     Q_INVOKABLE QStringList getImgPathNameList();
 
+    Q_INVOKABLE QStringList getImgInDirectory(QString directoryPath);
+
     Q_INVOKABLE void push(QString imgPathName);
     Q_INVOKABLE void clear();
+
+    Q_INVOKABLE bool isDirectory(QString path);
 
     // 判断图片是否能读取，如果不是png则直接返回false
     Q_INVOKABLE bool checkImage(QString imgPathName);
@@ -39,6 +44,8 @@ private:
     QStringList imgPathNameList;
 
     QVector<ImgControlBase*> vImgCompress;
+
+    MyFile myFile;
 };
 
 #endif // QMLCOMPRESSCONTROL_H

@@ -100,11 +100,12 @@ namespace {
 }
 
 JpgCompress::JpgCompress(QString imgPathName):
-    imgPathName(imgPathName)
-    , m_width(0)
+    m_width(0)
     , m_height(0)
     , m_rgbBuffer(nullptr)
+    , imgPathName(imgPathName)
 {
+    // 初始化哈夫曼
     _initHuffmanTables();
 }
 
@@ -134,10 +135,6 @@ bool JpgCompress::compress(QString imgPathName)
     Q_UNUSED(imgPathName);
     QTime time;
     time.start();
-//    jpg->save(imgPathName.replace(".jpg","_compress.jpg",Qt::CaseInsensitive).replace(".jpeg","_compress.jpeg",Qt::CaseInsensitive),"JPG",60);
-
-    QByteArray ba = imgPathName.toLatin1();
-    const char* inputFileName = ba.data();
 
     readJpg(imgPathName);
     qDebug()<<"读取 运行时间:"<<time.elapsed()/1000.0<<"s";
@@ -157,7 +154,6 @@ bool JpgCompress::checkImage(QString imgPathName)
     else
         return false;
 }
-
 
 bool JpgCompress::initialData()
 {
@@ -230,8 +226,9 @@ bool JpgCompress::readJpg(QString imgPathName)
             color[x][y][2] = c.blue();
         }
     }
+    unsigned long long total = (unsigned long long)width*(unsigned long long)height*(unsigned long long)3;
 
-    unsigned char* buffer = new unsigned char[width*height*3];
+    unsigned char* buffer = new unsigned char[total];
     if(buffer){
         for(int y=0;y<height;y++){
             for(int x=0;x<width;x++){
@@ -249,21 +246,21 @@ bool JpgCompress::readJpg(QString imgPathName)
     return successed;
 }
 
-bool JpgCompress::encodeToJPG(QString imgPathName, int quality_scale)
+bool JpgCompress::encodeToJPG(QString imgPathName, int quality)
 {
-    //��δ��ȡ��
+    // 图片初始化正常
     if(m_rgbBuffer==0 || m_width==0 || m_height==0) return false;
 
-    //�����ļ�
+    // 初始化写出
     std::string str = imgPathName.toStdString();
     const char* ch = str.c_str();
     FILE* fp = fopen(ch, "wb");
     if(fp==0) return false;
 
-    //��ʼ��������
-    _initQualityTables(quality_scale);
+    // 定义量化表
+    _initQualityTables(quality);
 
-    //�ļ�ͷ
+    // 写入文件头
     _write_jpeg_header(fp);
 
     short prev_DC_Y = 0, prev_DC_Cb = 0, prev_DC_Cr = 0;
@@ -276,23 +273,23 @@ bool JpgCompress::encodeToJPG(QString imgPathName, int quality_scale)
             char yData[64], cbData[64], crData[64];
             short yQuant[64], cbQuant[64], crQuant[64];
 
-            //ת����ɫ�ռ�
+            // 转换颜色空间
             _convertColorSpace(xPos, yPos, yData, cbData, crData);
 
             BitString outputBitString[128];
             int bitStringCounts;
 
-            //Yͨ��ѹ��
+            // Y分量压缩
             _foword_FDC(yData, yQuant);
             _doHuffmanEncoding(yQuant, prev_DC_Y, m_Y_DC_Huffman_Table, m_Y_AC_Huffman_Table, outputBitString, bitStringCounts);
             _write_bitstring_(outputBitString, bitStringCounts, newByte, newBytePos, fp);
 
-            //Cbͨ��ѹ��
+            // Cb分量压缩
             _foword_FDC(cbData, cbQuant);
             _doHuffmanEncoding(cbQuant, prev_DC_Cb, m_CbCr_DC_Huffman_Table, m_CbCr_AC_Huffman_Table, outputBitString, bitStringCounts);
             _write_bitstring_(outputBitString, bitStringCounts, newByte, newBytePos, fp);
 
-            //Crͨ��ѹ��
+            // Cr分量压缩
             _foword_FDC(crData, crQuant);
             _doHuffmanEncoding(crQuant, prev_DC_Cr, m_CbCr_DC_Huffman_Table, m_CbCr_AC_Huffman_Table, outputBitString, bitStringCounts);
             _write_bitstring_(outputBitString, bitStringCounts, newByte, newBytePos, fp);
@@ -305,7 +302,6 @@ bool JpgCompress::encodeToJPG(QString imgPathName, int quality_scale)
 
     return true;
 }
-
 
 void JpgCompress::_initHuffmanTables(void)
 {
@@ -327,7 +323,7 @@ JpgCompress::BitString JpgCompress::_getBitCode(int value)
     BitString ret;
     int v = (value>0) ? value : -value;
 
-    //bit �ĳ���
+    // bit 长度
     int length = 0;
     for(length=0; v; v>>=1) length++;
 
@@ -336,7 +332,6 @@ JpgCompress::BitString JpgCompress::_getBitCode(int value)
 
     return ret;
 };
-
 
 void JpgCompress::_initQualityTables(int quality_scale)
 {
@@ -357,7 +352,6 @@ void JpgCompress::_initQualityTables(int quality_scale)
     }
 }
 
-
 void JpgCompress::_computeHuffmanTable(const char* nr_codes, const unsigned char* std_table, BitString* huffman_table)
 {
     unsigned char pos_in_table = 0;
@@ -376,12 +370,10 @@ void JpgCompress::_computeHuffmanTable(const char* nr_codes, const unsigned char
     }
 }
 
-
 void JpgCompress::_write_byte_(unsigned char value, FILE* fp)
 {
     _write_(&value, 1, fp);
 }
-
 
 void JpgCompress::_write_word_(unsigned short value, FILE* fp)
 {
@@ -389,22 +381,20 @@ void JpgCompress::_write_word_(unsigned short value, FILE* fp)
     _write_(&_value, 2, fp);
 }
 
-
 void JpgCompress::_write_(const void* p, int byteSize, FILE* fp)
 {
     fwrite(p, 1, byteSize, fp);
 }
 
-
-void JpgCompress::_doHuffmanEncoding(const short* DU, short& prevDC, const BitString* HTDC, const BitString* HTAC,
-    BitString* outputBitString, int& bitStringCounts)
+void JpgCompress::_doHuffmanEncoding(const short* DU,short& prevDC,const BitString* HTDC
+                                     ,const BitString* HTAC,BitString* outputBitString,int& bitStringCounts)
 {
     BitString EOB = HTAC[0x00];
     BitString SIXTEEN_ZEROS = HTAC[0xF0];
 
     int index=0;
 
-    // encode DC
+    // 编码 DC
     int dcDiff = (int)(DU[0] - prevDC);
     prevDC = DU[0];
 
@@ -418,7 +408,7 @@ void JpgCompress::_doHuffmanEncoding(const short* DU, short& prevDC, const BitSt
         outputBitString[index++] = bs;
     }
 
-    // encode ACs
+    // 编码 ACs
     int endPos=63; //end0pos = first element in reverse order != 0
     while((endPos > 0) && (DU[endPos] == 0)) endPos--;
 
@@ -447,7 +437,6 @@ void JpgCompress::_doHuffmanEncoding(const short* DU, short& prevDC, const BitSt
 
     bitStringCounts = index;
 }
-
 
 void JpgCompress::_write_bitstring_(const BitString* bs, int counts, int& newByte, int& newBytePos, FILE* fp)
 {
@@ -484,7 +473,6 @@ void JpgCompress::_write_bitstring_(const BitString* bs, int counts, int& newByt
     }
 }
 
-
 void JpgCompress::_convertColorSpace(int xPos, int yPos, char* yData, char* cbData, char* crData)
 {
     for (int y=0; y<8; y++)
@@ -502,7 +490,6 @@ void JpgCompress::_convertColorSpace(int xPos, int yPos, char* yData, char* cbDa
         }
     }
 }
-
 
 void JpgCompress::_foword_FDC(const char* channel_data, short* fdc_data)
 {
@@ -533,7 +520,6 @@ void JpgCompress::_foword_FDC(const char* channel_data, short* fdc_data)
         }
     }
 }
-
 
 void JpgCompress::_write_jpeg_header(FILE* fp)
 {
@@ -566,8 +552,11 @@ void JpgCompress::_write_jpeg_header(FILE* fp)
     _write_word_(0xFFC0, fp);			//marker = 0xFFC0
     _write_word_(17, fp);				//length = 17 for a truecolor YCbCr JPG
     _write_byte_(8, fp);				//precision = 8: 8 bits/sample
-    _write_word_(m_height&0xFFFF, fp);	//height
-    _write_word_(m_width&0xFFFF, fp);	//width
+    QImage jpg;
+    jpg.load(imgPathName);
+    int width = jpg.width(), height = jpg.height();
+    _write_word_(height&0xFFFF, fp);	//height
+    _write_word_(width&0xFFFF, fp);	//width
     _write_byte_(3, fp);				//nrofcomponents = 3: We encode a truecolor JPG
 
     _write_byte_(1, fp);				//IdY = 1

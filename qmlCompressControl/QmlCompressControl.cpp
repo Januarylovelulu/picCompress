@@ -27,6 +27,11 @@ QStringList QmlCompressControl::getImgPathNameList()
     return this->imgPathNameList;
 }
 
+QStringList QmlCompressControl::getImgInDirectory(QString directoryPath)
+{
+
+}
+
 void QmlCompressControl::push(QString imgPathName)
 {
     imgPathNameList.push_back(imgPathName);
@@ -37,6 +42,11 @@ void QmlCompressControl::clear()
     imgPathNameList.clear();
 }
 
+bool QmlCompressControl::isDirectory(QString path)
+{
+    QFile file;
+}
+
 bool QmlCompressControl::checkImage(QString imgPathName)
 {
     // 如果名称为空或者不是png文件
@@ -44,9 +54,6 @@ bool QmlCompressControl::checkImage(QString imgPathName)
         return true;
     }
     else if(ImgControlBase::getImgType(imgPathName)==ImgControlBase::JPG && JpgCompress::isJPG(ImgControlBase::qmlPath_to_QtPath(imgPathName))){
-        return true;
-    }
-    else if(ImgControlBase::getImgType(imgPathName)==ImgControlBase::BMP){
         return true;
     }
     else{
@@ -70,7 +77,6 @@ bool QmlCompressControl::compress()
         switch (ImgControlBase::getImgType(imgPathName)) {
             case ImgControlBase::PNG : imgCompressBase = new PngCompress(ImgControlBase::qmlPath_to_QtPath(imgPathName));break;
             case ImgControlBase::JPG : imgCompressBase = new JpgCompress(ImgControlBase::qmlPath_to_QtPath(imgPathName));break;
-            case ImgControlBase::BMP : imgCompressBase = new JpgCompress(ImgControlBase::qmlPath_to_QtPath(imgPathName));break;
             default:;
         }
         connect(imgCompressBase,&ImgControlBase::finished,this,&QmlCompressControl::on_deleteImgControl);

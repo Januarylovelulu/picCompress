@@ -74,8 +74,8 @@ Page {
         }
         onDropped: {
             if(drop.hasUrls){
-                for(var i = 0; i < drop.urls.length; i++){
-                    addPictrue(drop.urls[i]);
+                for(var name of drop.urls){
+                    addPictrue(name);
                 }
             }
         }
@@ -92,19 +92,21 @@ Page {
             x: 30
             text: qsTr("添加图片")
             FileDialog {
-                id:fds
+                id:fd
                 title: "选择文件"
                 folder: shortcuts.desktop
                 selectExisting: true
                 selectFolder: false
-                selectMultiple: false
-                nameFilters: ["图片文件 (*.png *.jpg *.jpeg *.bmp)"]
+                selectMultiple: true
+                nameFilters: ["图片文件 (*.png *.jpg *.jpeg)"]
                 onAccepted: {
-                    addPictrue(fds.fileUrl.toString());
+                    for(var name of fd.fileUrls){
+                        addPictrue(name.toString());
+                    }
                 }
             }
             onClicked: {
-                fds.open();
+                fd.open();
             }
         }
         Button {
@@ -114,8 +116,19 @@ Page {
             anchors.leftMargin: addPic.x
             text: qsTr("添加文件夹")
 
+            FileDialog {
+                id:fds
+                title: "选择文件"
+                folder: shortcuts.desktop
+                selectExisting: true
+                selectFolder: true
+                selectMultiple: true
+                onAccepted: {
+                    addPictrue(fds.fileUrl.toString());
+                }
+            }
             onClicked: {
-                imgControlView.model--;
+                fds.open();
             }
         }
         Button {

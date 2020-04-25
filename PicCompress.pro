@@ -15,6 +15,7 @@ DEFINES += QT_DEPRECATED_WARNINGS
 include( $$PWD/pngCompress/PngCompress.pri )
 include( $$PWD/jpgCompress/JpgCompress.pri )
 include( $$PWD/qmlCompressControl/QmlCompressControl.pri )
+include( $$PWD/myFile/MyFile.pri )
 
 SOURCES += \
         $$PWD/main.cpp
