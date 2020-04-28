@@ -30,8 +30,10 @@ bool PngCompress::compress(QString imgPathName)
 //    if(str == "IHDR" || str == "PLTE" || str == "IDAT" || str == "IEND" || str=="tRNS"){
 //        isWrite = true;
 //    }
-
-    JQZopfli::optimize(imgPathName,imgPathName.replace(".png","_Compressed.png",Qt::CaseInsensitive));
+    
+    QString from=imgPathName,to=imgPathName;
+    to.replace(".png","_Compressed.png",Qt::CaseInsensitive);
+    JQZopfli::OptimizeResult result = JQZopfli::optimize(from,to);
 
     return true;
 }
