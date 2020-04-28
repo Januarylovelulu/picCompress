@@ -37,4 +37,4 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 HEADERS += \
 
 ICON = background.icns
-RC_ICONS = background.png
+RC_ICONS = background.ico
