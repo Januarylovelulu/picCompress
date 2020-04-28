@@ -14,7 +14,7 @@ const quint32 JPG_TITLE = 0x00FFD8FF;
 class JpgCompress : public ImgControlBase
 {
 public:
-    JpgCompress(QString imgPathName);
+    JpgCompress(QString imgPathName, int quality = 60);
     ~JpgCompress();
 
     bool compress(QString imgPathName);
@@ -27,6 +27,8 @@ public:
     bool readJpg(QString imgPathName);
 
     bool encodeToJPG(QString imgPathName, int quality);
+
+    void setQuality(int quality);
 
 protected:
     bool initialData();
@@ -73,6 +75,7 @@ private:
 
 private:
     QString imgPathName;
+    int quality;
 
     bool judgePath(QString &imgPathName);
 };

@@ -35,3 +35,6 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
 
 HEADERS += \
+
+ICON = background.icns
+RC_ICONS = background.png

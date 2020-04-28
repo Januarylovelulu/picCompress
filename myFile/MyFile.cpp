@@ -313,7 +313,7 @@ QStringList MyFile::fileInDirectory(QString path,bool isNeglectHide)
     foreach (QFileInfo fi, fileList)
     {
         if (fi.isFile())
-            strList.append(fi.fileName());
+            strList.append(fi.filePath());
     }
     return strList;
 }
@@ -333,7 +333,7 @@ QStringList MyFile::directoryInDirectory(QString path,bool isNeglectHide)
     foreach (QFileInfo fi, fileList)
     {
         if (!fi.isFile())
-            strList.append(fi.fileName());
+            strList.append(fi.filePath());
     }
     return strList;
 }

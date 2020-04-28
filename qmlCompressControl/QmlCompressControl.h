@@ -21,6 +21,8 @@ public:
 
     Q_INVOKABLE QStringList getImgInDirectory(QString directoryPath);
 
+    Q_INVOKABLE void setQuality(int quality);
+
     Q_INVOKABLE void push(QString imgPathName);
     Q_INVOKABLE void clear();
 
@@ -46,6 +48,8 @@ private:
     QVector<ImgControlBase*> vImgCompress;
 
     MyFile myFile;
+
+    int quality;
 };
 
 #endif // QMLCOMPRESSCONTROL_H

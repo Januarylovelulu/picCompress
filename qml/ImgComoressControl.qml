@@ -30,6 +30,6 @@ Item {
         elide: Text.ElideMiddle
 
 
-        color: root.Material.theme === Material.Dark ? "white": "gray"
+        color: root.Material.theme === Material.Dark ? "white": "#505050"
     }
 }

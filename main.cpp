@@ -16,10 +16,10 @@ int main(int argc, char *argv[])
 //    engine.rootContext()->setContextProperty("qmlCompressControl", &model);
     qmlRegisterType<QmlCompressControl>("QmlCompressControl",1,0,"QmlCompressControl");
 
-    QSharedMemory singleton(app.applicationName());
-    if(!singleton.create(1))  {    //已经存在的
-        exit(0);
-    }
+//    QSharedMemory singleton(app.applicationName());
+//    if(!singleton.create(1))  {    //已经存在的
+//        exit(0);
+//    }
 
     const QUrl url(QStringLiteral("qrc:/main.qml"));
     QObject::connect(&engine, &QQmlApplicationEngine::objectCreated,

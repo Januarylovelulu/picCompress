@@ -6,7 +6,7 @@
 
 QmlCompressControl::QmlCompressControl()
 {
-
+    quality = 30;
 }
 
 QString QmlCompressControl::getImgName(int index)
@@ -29,7 +29,30 @@ QStringList QmlCompressControl::getImgPathNameList()
 
 QStringList QmlCompressControl::getImgInDirectory(QString directoryPath)
 {
+    QStringList result,dir,file;
+    dir << ImgControlBase::qmlPath_to_QtPath(directoryPath);
+    while(!dir.empty()){
+        QStringList dirTmp;
+        for(QString path : dir){
+            file = myFile.fileInDirectory(path,true);
+            dirTmp += myFile.directoryInDirectory(path,true);
+            for(QString tmp : file){
+                QString s = tmp.split(".").last().toLower();
+                if(s == "jpg" || s == "jpeg" || s == "png"){
+                    tmp = "file://" + tmp;
+                    result << tmp;
+                }
+            }
+            file.clear();
+        }
+        dir = dirTmp;
+    }
+    return result;
+}
 
+void QmlCompressControl::setQuality(int quality)
+{
+    this->quality = quality;
 }
 
 void QmlCompressControl::push(QString imgPathName)
@@ -44,7 +67,11 @@ void QmlCompressControl::clear()
 
 bool QmlCompressControl::isDirectory(QString path)
 {
-    QFile file;
+    QFileInfo file(ImgControlBase::qmlPath_to_QtPath(path));
+    if(file.isDir())
+        return true;
+    else
+        return false;
 }
 
 bool QmlCompressControl::checkImage(QString imgPathName)
@@ -76,7 +103,7 @@ bool QmlCompressControl::compress()
         ImgControlBase *imgCompressBase;
         switch (ImgControlBase::getImgType(imgPathName)) {
             case ImgControlBase::PNG : imgCompressBase = new PngCompress(ImgControlBase::qmlPath_to_QtPath(imgPathName));break;
-            case ImgControlBase::JPG : imgCompressBase = new JpgCompress(ImgControlBase::qmlPath_to_QtPath(imgPathName));break;
+            case ImgControlBase::JPG : imgCompressBase = new JpgCompress(ImgControlBase::qmlPath_to_QtPath(imgPathName),quality);;break;
             default:;
         }
         connect(imgCompressBase,&ImgControlBase::finished,this,&QmlCompressControl::on_deleteImgControl);
@@ -88,7 +115,8 @@ bool QmlCompressControl::compress()
 
 void QmlCompressControl::on_deleteImgControl()
 {
-    ImgControlBase *imgCompressBase=qobject_cast<ImgControlBase*>(sender());
+    ImgControlBase *imgCompressBase = qobject_cast<ImgControlBase*>(sender());
+    disconnect(imgCompressBase,&ImgControlBase::finished,this,&QmlCompressControl::on_deleteImgControl);
     delete imgCompressBase;
     for(auto &p : vImgCompress){
         if(p == imgCompressBase)

@@ -99,11 +99,12 @@ namespace {
     };
 }
 
-JpgCompress::JpgCompress(QString imgPathName):
+JpgCompress::JpgCompress(QString imgPathName, int quality):
     m_width(0)
     , m_height(0)
     , m_rgbBuffer(nullptr)
     , imgPathName(imgPathName)
+    , quality(quality)
 {
     // 初始化哈夫曼
     _initHuffmanTables();
@@ -141,7 +142,7 @@ bool JpgCompress::compress(QString imgPathName)
 
     time.restart();
     QString name = imgPathName.replace(".jpg","_Compress.jpg",Qt::CaseInsensitive).replace(".jpeg","_Compress.jpeg",Qt::CaseInsensitive);
-    encodeToJPG(imgPathName,60);
+    encodeToJPG(imgPathName,quality);
     qDebug()<<"压缩 运行时间:"<<time.elapsed()/1000.0<<"s";
 
     return true;
@@ -303,6 +304,11 @@ bool JpgCompress::encodeToJPG(QString imgPathName, int quality)
     return true;
 }
 
+void JpgCompress::setQuality(int quality)
+{
+    this->quality = quality;
+}
+
 void JpgCompress::_initHuffmanTables(void)
 {
     memset(&m_Y_DC_Huffman_Table, 0, sizeof(m_Y_DC_Huffman_Table));
@@ -336,7 +342,7 @@ JpgCompress::BitString JpgCompress::_getBitCode(int value)
 void JpgCompress::_initQualityTables(int quality_scale)
 {
     if(quality_scale<=0) quality_scale=1;
-    if(quality_scale>=100) quality_scale=99;
+    if(quality_scale>=100) quality_scale=100;
 
     for(int i=0; i<64; i++)
     {
