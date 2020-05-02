@@ -24,13 +24,11 @@ public:
 
     void clean(void);
 
-    bool readJpg(QString imgPathName);
-
-    bool encodeToJPG(QString imgPathName, int quality);
-
     void setQuality(int quality);
 
 protected:
+    bool readImg(QString imgPathName);
+
     bool initialData();
     void run();
 

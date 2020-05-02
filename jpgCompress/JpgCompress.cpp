@@ -133,122 +133,6 @@ bool JpgCompress::isJPG(QString imgPathName)
 
 bool JpgCompress::compress(QString imgPathName)
 {
-    Q_UNUSED(imgPathName);
-    QTime time;
-    time.start();
-
-    readJpg(imgPathName);
-    qDebug()<<"读取 运行时间:"<<time.elapsed()/1000.0<<"s";
-
-    time.restart();
-    QString name = imgPathName.replace(".jpg","_Compress.jpg",Qt::CaseInsensitive).replace(".jpeg","_Compress.jpeg",Qt::CaseInsensitive);
-    encodeToJPG(imgPathName,quality);
-    qDebug()<<"压缩 运行时间:"<<time.elapsed()/1000.0<<"s";
-
-    return true;
-}
-
-bool JpgCompress::checkImage(QString imgPathName)
-{
-    if(isJPG(imgPathName))
-        return true;
-    else
-        return false;
-}
-
-bool JpgCompress::initialData()
-{
-    return true;
-}
-
-void JpgCompress::run()
-{
-    if(!initialData())
-        return;
-    compress(imgPathName);
-}
-
-bool JpgCompress::judgePath(QString &imgPathName)
-{
-    if(imgPathName.isEmpty()){
-        if(this->imgPathName.isEmpty()){
-            qDebug()<<"JpgCompress: the image's pathName is empty, return false.";
-            return false;
-        }
-        else {
-            qDebug()<<"JpgCompress: the image's pathName is empty, but class's is not empty, return true.";
-            imgPathName = this->imgPathName;
-        }
-    }
-    else {
-        if(!isJPG(imgPathName)){
-            qDebug()<<"JpgCompress: the path("<<imgPathName<<")is not a legal Png file, return false";
-            return false;
-        }
-    }
-    return true;
-}
-
-void JpgCompress::clean(void)
-{
-    if(m_rgbBuffer) delete[] m_rgbBuffer;
-    m_rgbBuffer=nullptr;
-
-    m_width=0;
-    m_height=0;
-}
-
-bool JpgCompress::readJpg(QString imgPathName)
-{
-    bool successed = false;
-    clean();
-
-    QImage jpg;
-    jpg.load(imgPathName);
-    int width = jpg.width(), height = jpg.height();
-
-    // 无法凑齐8×8，则补齐格子
-    int fx=0,fy=0;
-    if(width%8!=0)
-        fx = 8 - width%8;
-    if(height%8!=0)
-        fy = 8 - height%8;
-    width+=fx;
-    height+=fy;
-
-    QVector<QVector<QVector<int> > > color(width,QVector<QVector<int> >(height,QVector<int>(3,0)));
-
-    // 获取颜色
-    for(int y=0;y<jpg.height();y++){
-        for(int x=0;x<jpg.width();x++){
-            QColor c = jpg.pixelColor(x,y);
-            color[x][y][0] = c.red();
-            color[x][y][1] = c.green();
-            color[x][y][2] = c.blue();
-        }
-    }
-    unsigned long long total = (unsigned long long)width*(unsigned long long)height*(unsigned long long)3;
-
-    unsigned char* buffer = new unsigned char[total];
-    if(buffer){
-        for(int y=0;y<height;y++){
-            for(int x=0;x<width;x++){
-                buffer[(x+y*width)*3] = (unsigned char)color[x][y][2];
-                buffer[(x+y*width)*3+1] = (unsigned char)color[x][y][1];
-                buffer[(x+y*width)*3+2] = (unsigned char)color[x][y][0];
-            }
-        }
-        m_rgbBuffer = buffer;
-        m_width = width;
-        m_height = height;
-        successed = true;
-    }
-
-    return successed;
-}
-
-bool JpgCompress::encodeToJPG(QString imgPathName, int quality)
-{
     // 图片初始化正常
     if(m_rgbBuffer==0 || m_width==0 || m_height==0) return false;
 
@@ -302,6 +186,119 @@ bool JpgCompress::encodeToJPG(QString imgPathName, int quality)
     fclose(fp);
 
     return true;
+}
+
+bool JpgCompress::checkImage(QString imgPathName)
+{
+    if(isJPG(imgPathName))
+        return true;
+    else
+        return false;
+}
+
+bool JpgCompress::initialData()
+{
+    return true;
+}
+
+void JpgCompress::run()
+{
+    if(!initialData())
+        return;
+
+    QTime time;
+    time.start();
+
+    readImg(imgPathName);
+    qDebug()<<"读取 运行时间:"<<time.elapsed()/1000.0<<"s";
+
+    time.restart();
+
+    QString name = imgPathName;
+    name.replace(".jpg","_Compress.jpg",Qt::CaseInsensitive).replace(".jpeg","_Compress.jpeg",Qt::CaseInsensitive);
+
+    compress(name);
+
+    qDebug()<<"压缩 运行时间:"<<time.elapsed()/1000.0<<"s";
+}
+
+bool JpgCompress::judgePath(QString &imgPathName)
+{
+    if(imgPathName.isEmpty()){
+        if(this->imgPathName.isEmpty()){
+            qDebug()<<"JpgCompress: the image's pathName is empty, return false.";
+            return false;
+        }
+        else {
+            qDebug()<<"JpgCompress: the image's pathName is empty, but class's is not empty, return true.";
+            imgPathName = this->imgPathName;
+        }
+    }
+    else {
+        if(!isJPG(imgPathName)){
+            qDebug()<<"JpgCompress: the path("<<imgPathName<<")is not a legal Png file, return false";
+            return false;
+        }
+    }
+    return true;
+}
+
+void JpgCompress::clean(void)
+{
+    if(m_rgbBuffer) delete[] m_rgbBuffer;
+    m_rgbBuffer=nullptr;
+
+    m_width=0;
+    m_height=0;
+}
+
+bool JpgCompress::readImg(QString imgPathName)
+{
+    bool successed = false;
+    clean();
+
+    QImage jpg;
+    jpg.load(imgPathName);
+    int width = jpg.width(), height = jpg.height();
+
+    // 无法凑齐8×8，则补齐格子
+    int fx=0,fy=0;
+    if(width%8!=0)
+        fx = 8 - width%8;
+    if(height%8!=0)
+        fy = 8 - height%8;
+    width+=fx;
+    height+=fy;
+
+    QVector<QVector<QVector<int> > > color(width,QVector<QVector<int> >(height,QVector<int>(3,0)));
+
+    // 获取颜色
+    for(int y=0;y<jpg.height();y++){
+        for(int x=0;x<jpg.width();x++){
+            QColor c = jpg.pixelColor(x,y);
+            color[x][y][0] = c.red();
+            color[x][y][1] = c.green();
+            color[x][y][2] = c.blue();
+        }
+    }
+    unsigned long long total = (unsigned long long)width*(unsigned long long)height*(unsigned long long)3;
+
+    unsigned char* buffer = new unsigned char[total];
+    if(buffer){
+        for(int y=0;y<height;y++){
+            for(int x=0;x<width;x++){
+                buffer[(x+y*width)*3] = (unsigned char)color[x][y][2];
+                buffer[(x+y*width)*3+1] = (unsigned char)color[x][y][1];
+                buffer[(x+y*width)*3+2] = (unsigned char)color[x][y][0];
+            }
+        }
+        m_rgbBuffer = buffer;
+        m_width = width;
+        m_height = height;
+        successed = true;
+    }
+
+    return successed;
 }
 
 void JpgCompress::setQuality(int quality)

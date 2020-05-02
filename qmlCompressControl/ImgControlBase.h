@@ -26,6 +26,8 @@ public:
     virtual bool checkImage(QString imgPathName) = 0;
 
 protected:
+    virtual bool readImg(QString imgPathName) = 0;
+
     virtual bool initialData() = 0;
     virtual void run() = 0;
 

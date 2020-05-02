@@ -92,7 +92,7 @@ bool PngCompress::checkImage(QString imgPathName)
         return false;
 }
 
-bool PngCompress::readPng(QString imgPathName)
+bool PngCompress::readImg(QString imgPathName)
 {
     QFile file(imgPathName);
     if (!file.open(QIODevice::ReadOnly)){

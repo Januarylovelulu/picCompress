@@ -104,7 +104,7 @@ bool QmlCompressControl::compress()
         switch (ImgControlBase::getImgType(imgPathName)) {
             case ImgControlBase::PNG : imgCompressBase = new PngCompress(ImgControlBase::qmlPath_to_QtPath(imgPathName));break;
             case ImgControlBase::JPG : imgCompressBase = new JpgCompress(ImgControlBase::qmlPath_to_QtPath(imgPathName),quality);;break;
-            default:;
+            default: returnIsRuning(false, 0, imgPathNameList.size());return false;
         }
         connect(imgCompressBase,&ImgControlBase::finished,this,&QmlCompressControl::on_deleteImgControl);
         vImgCompress.push_back(imgCompressBase);

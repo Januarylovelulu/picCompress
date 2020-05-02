@@ -71,6 +71,9 @@ Page {
                     stackLayout.creatItem();
                     stackLayout.currentIndex = stackLayout.count - 1
                 }
+                else{
+                    tabBar.currentIndex = tabBar.count-1;
+                }
             }
         }
     }

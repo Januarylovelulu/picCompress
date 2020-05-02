@@ -61,6 +61,27 @@ Item{
         z: 1
     }
 
+    Rectangle{
+        width: img.width >= img.height ? 88 : 88*img.width/img.height
+        height: img.height > img.width ? 88 : 88*img.height/img.width
+        anchors.right: parent.right
+        anchors.bottom: parent.bottom
+        border.color: imgControl.Material.theme === Material.Dark ? "white" : "black"
+        color: "transparent"
+        border.width: 2
+        z: 2
+        Image {
+            id: imgScale
+            source: img.source
+            width: parent.width - parent.border.width*2
+            height: parent.height - parent.border.height*2
+            anchors.centerIn: parent
+            fillMode: Image.PreserveAspectFit
+            mirror: false
+        }
+    }
+
+
     // 快速拖入图片
     DropArea {
         anchors.fill: parent
