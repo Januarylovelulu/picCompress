@@ -6,7 +6,7 @@
 
 QmlCompressControl::QmlCompressControl()
 {
-    quality = 30;
+    quality = 60;
 }
 
 QString QmlCompressControl::getImgName(int index)
@@ -77,10 +77,12 @@ bool QmlCompressControl::isDirectory(QString path)
 bool QmlCompressControl::checkImage(QString imgPathName)
 {
     // 如果名称为空或者不是png文件
-    if(ImgControlBase::getImgType(imgPathName)==ImgControlBase::PNG && PngCompress::isPng(ImgControlBase::qmlPath_to_QtPath(imgPathName))){
+    if(ImgControlBase::getImgType(imgPathName)==ImgControlBase::PNG
+            && PngCompress::isPng(ImgControlBase::qmlPath_to_QtPath(imgPathName))){
         return true;
     }
-    else if(ImgControlBase::getImgType(imgPathName)==ImgControlBase::JPG && JpgCompress::isJPG(ImgControlBase::qmlPath_to_QtPath(imgPathName))){
+    else if(ImgControlBase::getImgType(imgPathName)==ImgControlBase::JPG
+            && JpgCompress::isJPG(ImgControlBase::qmlPath_to_QtPath(imgPathName))){
         return true;
     }
     else{

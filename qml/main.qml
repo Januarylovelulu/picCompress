@@ -26,10 +26,10 @@ ApplicationWindow {
         currentIndex: swipeView.currentIndex
 
         TabButton {
-            text: qsTr("压缩图片")
+            text: qsTr("图片压缩")
         }
         TabButton {
-            text: qsTr("编辑图片")
+            text: qsTr("图片查看")
         }
     }
 

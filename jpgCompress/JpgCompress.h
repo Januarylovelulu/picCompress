@@ -53,15 +53,15 @@ private:
     BitString m_CbCr_AC_Huffman_Table[256];
 
 private:
-    void _initHuffmanTables(void);
-    void _initCategoryAndBitcode(void);
-    void _initQualityTables(int quality);
-    void _computeHuffmanTable(const char* nr_codes, const unsigned char* std_table, BitString* huffman_table);
-    BitString _getBitCode(int value);
+    void initHuffmanTables(void);
+    void initCategoryAndBitcode(void);
+    void initQualityTables(int quality);
+    void computeHuffmanTable(const char* nr_codes, const unsigned char* std_table, BitString* huffman_table);
+    BitString getBitCode(int value);
 
-    void _convertColorSpace(int xPos, int yPos, char* yData, char* cbData, char* crData);
-    void _foword_FDC(const char* channel_data, short* fdc_data);
-    void _doHuffmanEncoding(const short* DU, short& prevDC, const BitString* HTDC, const BitString* HTAC,
+    void convertColorSpace(int xPos, int yPos, char* yData, char* cbData, char* crData);
+    void foword_FDC(const char* channel_data, short* fdc_data);
+    void doHuffmanEncoding(const short* DU, short& prevDC, const BitString* HTDC, const BitString* HTAC,
         BitString* outputBitString, int& bitStringCounts);
 
 private:

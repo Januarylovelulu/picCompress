@@ -92,6 +92,7 @@ Page {
                     else
                         addPictrue(name);
                 }
+                imgControlView.model = qmlCompressControl.getImgPathNameList();
             }
         }
     }
@@ -118,6 +119,7 @@ Page {
                     for(var name of fd.fileUrls){
                         addPictrue(name.toString());
                     }
+                    imgControlView.model = qmlCompressControl.getImgPathNameList();
                 }
             }
             onClicked: {
@@ -145,6 +147,7 @@ Page {
                             addPictrue(img.toString());
                         }
                     }
+                    imgControlView.model = qmlCompressControl.getImgPathNameList();
                 }
             }
             onClicked: {
@@ -279,13 +282,12 @@ Page {
         }
     }
 
-    function addPictrue(name){
+    function addPictrue(pathName){
         // 如果是规定图片
-        if(qmlCompressControl.checkImage(name)){
+        if(qmlCompressControl.checkImage(pathName)){
             // 如果列表里没有则添加
-            if(qmlCompressControl.getImgPathNameList().indexOf(name) === -1){
-                qmlCompressControl.push(name);
-                imgControlView.model = qmlCompressControl.getImgPathNameList();
+            if(qmlCompressControl.getImgPathNameList().indexOf(pathName) === -1){
+                qmlCompressControl.push(pathName);
                 noticeText.opacity = 0;
             }
         }

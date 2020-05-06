@@ -44,11 +44,8 @@ protected:
 
 private:
     QStringList imgPathNameList;
-
     QVector<ImgControlBase*> vImgCompress;
-
     MyFile myFile;
-
     int quality;
 };
 

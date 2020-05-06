@@ -111,6 +111,7 @@ Item{
 
     // 旋转缩放图片
     PinchArea {
+        id: pinchArea
         anchors.fill: parent
         pinch.maximumRotation: 360
         pinch.minimumRotation: -360
@@ -173,6 +174,9 @@ Item{
         //使用鼠标滚轮缩放
         onWheel: {
             //每次滚动都是120的倍数
+            if(pinchArea.pinch.accepted === true)
+                return ;
+
             var zoom = 0.96
             var datla = wheel.angleDelta.y/120;
             if(datla > 0)

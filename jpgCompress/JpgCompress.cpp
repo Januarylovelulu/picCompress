@@ -107,7 +107,7 @@ JpgCompress::JpgCompress(QString imgPathName, int quality):
     , quality(quality)
 {
     // 初始化哈夫曼
-    _initHuffmanTables();
+    initHuffmanTables();
 }
 
 JpgCompress::~JpgCompress()
@@ -143,7 +143,7 @@ bool JpgCompress::compress(QString imgPathName)
     if(fp==0) return false;
 
     // 定义量化表
-    _initQualityTables(quality);
+    initQualityTables(quality);
 
     // 写入文件头
     _write_jpeg_header(fp);
@@ -159,24 +159,24 @@ bool JpgCompress::compress(QString imgPathName)
             short yQuant[64], cbQuant[64], crQuant[64];
 
             // 转换颜色空间
-            _convertColorSpace(xPos, yPos, yData, cbData, crData);
+            convertColorSpace(xPos, yPos, yData, cbData, crData);
 
             BitString outputBitString[128];
             int bitStringCounts;
 
             // Y分量压缩
-            _foword_FDC(yData, yQuant);
-            _doHuffmanEncoding(yQuant, prev_DC_Y, m_Y_DC_Huffman_Table, m_Y_AC_Huffman_Table, outputBitString, bitStringCounts);
+            foword_FDC(yData, yQuant);
+            doHuffmanEncoding(yQuant, prev_DC_Y, m_Y_DC_Huffman_Table, m_Y_AC_Huffman_Table, outputBitString, bitStringCounts);
             _write_bitstring_(outputBitString, bitStringCounts, newByte, newBytePos, fp);
 
             // Cb分量压缩
-            _foword_FDC(cbData, cbQuant);
-            _doHuffmanEncoding(cbQuant, prev_DC_Cb, m_CbCr_DC_Huffman_Table, m_CbCr_AC_Huffman_Table, outputBitString, bitStringCounts);
+            foword_FDC(cbData, cbQuant);
+            doHuffmanEncoding(cbQuant, prev_DC_Cb, m_CbCr_DC_Huffman_Table, m_CbCr_AC_Huffman_Table, outputBitString, bitStringCounts);
             _write_bitstring_(outputBitString, bitStringCounts, newByte, newBytePos, fp);
 
             // Cr分量压缩
-            _foword_FDC(crData, crQuant);
-            _doHuffmanEncoding(crQuant, prev_DC_Cr, m_CbCr_DC_Huffman_Table, m_CbCr_AC_Huffman_Table, outputBitString, bitStringCounts);
+            foword_FDC(crData, crQuant);
+            doHuffmanEncoding(crQuant, prev_DC_Cr, m_CbCr_DC_Huffman_Table, m_CbCr_AC_Huffman_Table, outputBitString, bitStringCounts);
             _write_bitstring_(outputBitString, bitStringCounts, newByte, newBytePos, fp);
         }
     }
@@ -306,22 +306,22 @@ void JpgCompress::setQuality(int quality)
     this->quality = quality;
 }
 
-void JpgCompress::_initHuffmanTables(void)
+void JpgCompress::initHuffmanTables(void)
 {
     memset(&m_Y_DC_Huffman_Table, 0, sizeof(m_Y_DC_Huffman_Table));
-    _computeHuffmanTable(Standard_DC_Luminance_NRCodes, Standard_DC_Luminance_Values, m_Y_DC_Huffman_Table);
+    computeHuffmanTable(Standard_DC_Luminance_NRCodes, Standard_DC_Luminance_Values, m_Y_DC_Huffman_Table);
 
     memset(&m_Y_AC_Huffman_Table, 0, sizeof(m_Y_AC_Huffman_Table));
-    _computeHuffmanTable(Standard_AC_Luminance_NRCodes, Standard_AC_Luminance_Values, m_Y_AC_Huffman_Table);
+    computeHuffmanTable(Standard_AC_Luminance_NRCodes, Standard_AC_Luminance_Values, m_Y_AC_Huffman_Table);
 
     memset(&m_CbCr_DC_Huffman_Table, 0, sizeof(m_CbCr_DC_Huffman_Table));
-    _computeHuffmanTable(Standard_DC_Chrominance_NRCodes, Standard_DC_Chrominance_Values, m_CbCr_DC_Huffman_Table);
+    computeHuffmanTable(Standard_DC_Chrominance_NRCodes, Standard_DC_Chrominance_Values, m_CbCr_DC_Huffman_Table);
 
     memset(&m_CbCr_AC_Huffman_Table, 0, sizeof(m_CbCr_AC_Huffman_Table));
-    _computeHuffmanTable(Standard_AC_Chrominance_NRCodes, Standard_AC_Chrominance_Values, m_CbCr_AC_Huffman_Table);
+    computeHuffmanTable(Standard_AC_Chrominance_NRCodes, Standard_AC_Chrominance_Values, m_CbCr_AC_Huffman_Table);
 }
 
-JpgCompress::BitString JpgCompress::_getBitCode(int value)
+JpgCompress::BitString JpgCompress::getBitCode(int value)
 {
     BitString ret;
     int v = (value>0) ? value : -value;
@@ -336,7 +336,7 @@ JpgCompress::BitString JpgCompress::_getBitCode(int value)
     return ret;
 };
 
-void JpgCompress::_initQualityTables(int quality_scale)
+void JpgCompress::initQualityTables(int quality_scale)
 {
     if(quality_scale<=0) quality_scale=1;
     if(quality_scale>=100) quality_scale=100;
@@ -355,7 +355,7 @@ void JpgCompress::_initQualityTables(int quality_scale)
     }
 }
 
-void JpgCompress::_computeHuffmanTable(const char* nr_codes, const unsigned char* std_table, BitString* huffman_table)
+void JpgCompress::computeHuffmanTable(const char* nr_codes, const unsigned char* std_table, BitString* huffman_table)
 {
     unsigned char pos_in_table = 0;
     unsigned short code_value = 0;
@@ -389,7 +389,7 @@ void JpgCompress::_write_(const void* p, int byteSize, FILE* fp)
     fwrite(p, 1, byteSize, fp);
 }
 
-void JpgCompress::_doHuffmanEncoding(const short* DU,short& prevDC,const BitString* HTDC
+void JpgCompress::doHuffmanEncoding(const short* DU,short& prevDC,const BitString* HTDC
                                      ,const BitString* HTAC,BitString* outputBitString,int& bitStringCounts)
 {
     BitString EOB = HTAC[0x00];
@@ -405,7 +405,7 @@ void JpgCompress::_doHuffmanEncoding(const short* DU,short& prevDC,const BitStri
         outputBitString[index++] = HTDC[0];
     else
     {
-        BitString bs = _getBitCode(dcDiff);
+        BitString bs = getBitCode(dcDiff);
 
         outputBitString[index++] = HTDC[bs.length];
         outputBitString[index++] = bs;
@@ -428,7 +428,7 @@ void JpgCompress::_doHuffmanEncoding(const short* DU,short& prevDC,const BitStri
             zeroCounts = zeroCounts%16;
         }
 
-        BitString bs = _getBitCode(DU[i]);
+        BitString bs = getBitCode(DU[i]);
 
         outputBitString[index++] = HTAC[(zeroCounts << 4) | bs.length];
         outputBitString[index++] = bs;
@@ -476,7 +476,7 @@ void JpgCompress::_write_bitstring_(const BitString* bs, int counts, int& newByt
     }
 }
 
-void JpgCompress::_convertColorSpace(int xPos, int yPos, char* yData, char* cbData, char* crData)
+void JpgCompress::convertColorSpace(int xPos, int yPos, char* yData, char* cbData, char* crData)
 {
     for (int y=0; y<8; y++)
     {
@@ -494,7 +494,7 @@ void JpgCompress::_convertColorSpace(int xPos, int yPos, char* yData, char* cbDa
     }
 }
 
-void JpgCompress::_foword_FDC(const char* channel_data, short* fdc_data)
+void JpgCompress::foword_FDC(const char* channel_data, short* fdc_data)
 {
     const float PI = 3.1415926f;
     for(int v=0; v<8; v++)
