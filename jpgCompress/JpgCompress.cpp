@@ -137,10 +137,11 @@ bool JpgCompress::compress(QString imgPathName)
     if(m_rgbBuffer==0 || m_width==0 || m_height==0) return false;
 
     // 初始化写出
-    std::string str = imgPathName.toStdString();
-    const char* ch = str.c_str();
-    FILE* fp = fopen(ch, "wb");
-    if(fp==0) return false;
+    QFile* fp = new QFile(imgPathName);
+    if(!fp->open(QIODevice::ReadWrite)) {
+        qDebug()<<"JPEG::错误: "<<imgPathName<<" QFile无法打开，导致错误";
+        return false;
+    }
 
     // 定义量化表
     initQualityTables(quality);
@@ -183,7 +184,8 @@ bool JpgCompress::compress(QString imgPathName)
 
     _write_word_(0xFFD9, fp); //Write End of Image Marker
 
-    fclose(fp);
+    fp->close();
+    delete fp;
 
     return true;
 }
@@ -198,6 +200,8 @@ bool JpgCompress::checkImage(QString imgPathName)
 
 bool JpgCompress::initialData()
 {
+    QFileInfo finfo(imgPathName);
+    originalSize = finfo.size();
     return true;
 }
 
@@ -209,6 +213,7 @@ void JpgCompress::run()
     QTime time;
     time.start();
 
+//    readImg_New(imgPathName);
     readImg(imgPathName);
     qDebug()<<"读取 运行时间:"<<time.elapsed()/1000.0<<"s";
 
@@ -236,7 +241,7 @@ bool JpgCompress::judgePath(QString &imgPathName)
     }
     else {
         if(!isJPG(imgPathName)){
-            qDebug()<<"JpgCompress: the path("<<imgPathName<<")is not a legal Png file, return false";
+            qDebug()<<"JpgCompress: the path("<<imgPathName<<")is not a legal Png QFile, return false";
             return false;
         }
     }
@@ -260,6 +265,8 @@ bool JpgCompress::readImg(QString imgPathName)
     QImage jpg;
     jpg.load(imgPathName);
     int width = jpg.width(), height = jpg.height();
+    m_width_real = width;
+    m_height_real = height;
 
     // 无法凑齐8×8，则补齐格子
     int fx=0,fy=0;
@@ -301,6 +308,270 @@ bool JpgCompress::readImg(QString imgPathName)
     return successed;
 }
 
+bool JpgCompress::readImg_New(QString imgPathName)
+{
+    QFile file(imgPathName);
+    if(!file.open(QIODevice::ReadOnly)){
+        qDebug()<<"JPEG::错误 打开图片文件出错";
+        return false;
+    }
+    QDataStream in(&file);
+    quint16 SOS = 0xFFDA, DHT = 0xFFC4, DQT = 0xFFDB, APP0 = 0xFFE0,
+            SOF0 = 0xFFC0, COM = 0xFFFE, Skip;
+    in>>Skip;
+    // 哈夫曼编码后的data
+    QVector<quint8> data;
+    // 哈夫曼树的构造
+    char Standard_DC_Luminance_NRCodes[16];
+    unsigned char* Standard_DC_Luminance_Values=nullptr;
+    char Standard_AC_Luminance_NRCodes[16];
+    unsigned char* Standard_AC_Luminance_Values=nullptr;
+    char Standard_DC_Chrominance_NRCodes[16];
+    unsigned char* Standard_DC_Chrominance_Values=nullptr;
+    char Standard_AC_Chrominance_NRCodes[16];
+    unsigned char* Standard_AC_Chrominance_Values=nullptr;
+    int countList[4]={-1,-1,-1,-1};
+    // 量化表
+    unsigned char	d_YTable[64];
+    unsigned char	d_CbCrTable[64];
+    // 组件ID，采样系数，量化表号
+    int idQ[3];
+    int hv[3];
+    int qTable[3];
+    // 哈夫曼表映射
+    int huffmanTable[3];
+    int idHuffman[3];
+
+    while(!in.atEnd()){
+        quint16 head,len;
+        in>>head;
+
+        in>>len;
+        len-=2;
+
+        switch (head) {
+        case 0xFFDA:{
+            quint8 tmp;
+            in>>tmp;
+            if(tmp!=0x3){
+                qDebug()<<"JPEG::错误  FFDA扫描行组件数不等于3的暂时无法处理";
+                return false;
+            }
+            for (int x=0;x<3;x++) {
+                in>>tmp;
+                idHuffman[x] = tmp;
+                in>>tmp;
+                huffmanTable[x] = tmp;
+            }
+            in>>tmp>>tmp>>tmp;
+            while (!in.atEnd()) {
+                in>>tmp;
+                data.push_back(tmp);
+            }
+            // 删除0xFFD9
+            data.pop_back();data.pop_back();
+            break;
+        };
+        case 0xFFC4:{
+            for (int x=0;x<4;x++) {
+                quint8 tmp;
+                in>>tmp;
+                switch (tmp) {
+                case 0x0:{
+                    int times=0,count=0;
+                    while (times!=16) {
+                        in>>tmp;
+                        Standard_DC_Luminance_NRCodes[times] = tmp;
+                        count+=tmp;
+                        times++;
+                    }
+                    Standard_DC_Luminance_Values = new unsigned char[count];
+                    for (int x=0;x<count;x++) {
+                        in>>tmp;
+                        Standard_DC_Luminance_Values[x] = tmp;
+                    }
+                    countList[0]=count;
+                    break;
+                }
+                case 0x10:{
+                    int times=0,count=0;
+                    while (times!=16) {
+                        in>>tmp;
+                        Standard_AC_Luminance_NRCodes[times] = tmp;
+                        count+=tmp;
+                        times++;
+                    }
+                    Standard_AC_Luminance_Values = new unsigned char[count];
+                    for (int x=0;x<count;x++) {
+                        in>>tmp;
+                        Standard_AC_Luminance_Values[x] = tmp;
+                    }
+                    countList[1]=count;
+                    break;
+                }
+                case 0x01:{
+                    int times=0,count=0;
+                    while (times!=16) {
+                        in>>tmp;
+                        Standard_DC_Chrominance_NRCodes[times] = tmp;
+                        count+=tmp;
+                        times++;
+                    }
+                    Standard_DC_Chrominance_Values = new unsigned char[count];
+                    for (int x=0;x<count;x++) {
+                        in>>tmp;
+                        Standard_DC_Chrominance_Values[x] = tmp;
+                    }
+                    countList[2]=count;
+                    break;
+                }
+                case 0x11:{
+                    int times=0,count=0;
+                    while (times!=16) {
+                        in>>tmp;
+                        Standard_AC_Chrominance_NRCodes[times] = tmp;
+                        count+=tmp;
+                        times++;
+                    }
+                    Standard_AC_Chrominance_Values = new unsigned char[count];
+                    for (int x=0;x<count;x++) {
+                        in>>tmp;
+                        Standard_AC_Chrominance_Values[x] = tmp;
+                    }
+                    countList[3]=count;
+                    break;
+                }
+                default:{
+                    qDebug()<<"JPEG::错误  DHT读取时遇到了未知表序号";
+                    return false;
+                }
+                }
+            }
+
+            memset(&d_Y_DC_Huffman_Table, 0, sizeof(d_Y_DC_Huffman_Table));
+            computeHuffmanTable(Standard_DC_Luminance_NRCodes, Standard_DC_Luminance_Values, d_Y_DC_Huffman_Table);
+
+            memset(&d_Y_AC_Huffman_Table, 0, sizeof(d_Y_AC_Huffman_Table));
+            computeHuffmanTable(Standard_AC_Luminance_NRCodes, Standard_AC_Luminance_Values, d_Y_AC_Huffman_Table);
+
+            memset(&d_CbCr_DC_Huffman_Table, 0, sizeof(d_CbCr_DC_Huffman_Table));
+            computeHuffmanTable(Standard_DC_Chrominance_NRCodes, Standard_DC_Chrominance_Values, d_CbCr_DC_Huffman_Table);
+
+            memset(&d_CbCr_AC_Huffman_Table, 0, sizeof(d_CbCr_AC_Huffman_Table));
+            computeHuffmanTable(Standard_AC_Chrominance_NRCodes, Standard_AC_Chrominance_Values, d_CbCr_AC_Huffman_Table);
+
+
+            break;
+        };
+        case 0xFFDB:{
+            quint8 tmp;
+            in>>tmp; // QT号
+            if(len<80){
+                int times=0;
+                if(tmp==0x00){
+                    while (times!=64) {
+                        in>>tmp;
+                        d_YTable[times++] = tmp;
+                    }
+                }
+                else {
+                    while (times!=64) {
+                        in>>tmp;
+                        d_CbCrTable[times++] = tmp;
+                    }
+                }
+            }
+            else {
+                if(tmp==0x00){
+                    int times=0;
+                    while (times!=64) {
+                        in>>tmp;
+                        d_YTable[times++] = tmp;
+                    }
+                    in>>tmp;
+                    times = 0;
+                    while (times!=64) {
+                        in>>tmp;
+                        d_CbCrTable[times++] = tmp;
+                    }
+                }
+                else {
+                    int times=0;
+                    while (times!=64) {
+                        in>>tmp;
+                        d_CbCrTable[times++] = tmp;
+                    }
+                    in>>tmp;
+                    times = 0;
+                    while (times!=64) {
+                        in>>tmp;
+                        d_YTable[times++] = tmp;
+                    }
+                }
+            }
+
+            break;
+        };
+        case 0xFFE0:{
+            // 暂不知晓英寸和厘米有什么差别，直接跳过，主次版本号也直接默认为1
+            len-=4;
+            quint32 format;
+            in>>format;
+            if(format!=0x4A464946){
+                qDebug()<<"JPEG::错误  此图片格式不为JFIF，暂时认定为错误，并终止运行";
+                return false;
+            }
+            quint8 tmp;
+            while (len!=0) {
+                in>>tmp;
+                len--;
+            }
+            break;
+        };
+        case 0xFFC0:{
+            if(len!=15){
+                qDebug()<<"JPEG::错误 FFC0无法处理长度不为17的情况";
+                return false;
+            }
+            quint16 height,width;
+            quint8 tmp;
+            in>>tmp; // 丢掉
+            in>>height>>width;
+            m_width_real=width;
+            m_height_real=height;
+            in>>tmp; // 组件数，一般为3
+            for (int x=0;x<3;x++) {
+                in>>tmp;
+                idQ[x]=tmp;
+                in>>tmp;
+                hv[x]=tmp;
+                in>>tmp;
+                qTable[x]=tmp;
+            }
+            break;
+        };
+        default:{
+            qDebug()<<"JPEG::警告  跳过段 "+QString::number(head,16)+" 长度为："<<len;
+            quint8 tmp;
+            while (len!=0) {
+                in>>tmp;
+                len--;
+            }
+        };
+        }
+    }
+    QString str1,str2;
+    for (int x=0;x<12;x++) {
+        str1+=QString::number(d_Y_DC_Huffman_Table[x].length,16)+" ";
+        str2+=QString::number(d_Y_DC_Huffman_Table[x].value,16)+" ";
+    }
+    qDebug()<<str1;
+    qDebug()<<str2;
+    file.close();
+
+    return true;
+}
+
 void JpgCompress::setQuality(int quality)
 {
     this->quality = quality;
@@ -330,6 +601,7 @@ JpgCompress::BitString JpgCompress::getBitCode(int value)
     int length = 0;
     for(length=0; v; v>>=1) length++;
 
+    // -6 l=3 8-6-1=1  5 l=3 5
     ret.value = value>0 ? value : ((1<<length)+value-1);
     ret.length = length;
 
@@ -373,20 +645,23 @@ void JpgCompress::computeHuffmanTable(const char* nr_codes, const unsigned char*
     }
 }
 
-void JpgCompress::_write_byte_(unsigned char value, FILE* fp)
+void JpgCompress::_write_byte_(unsigned char value, QFile* fp)
 {
     _write_(&value, 1, fp);
 }
 
-void JpgCompress::_write_word_(unsigned short value, FILE* fp)
+void JpgCompress::_write_word_(unsigned short value, QFile* fp)
 {
     unsigned short _value = ((value>>8)&0xFF) | ((value&0xFF)<<8);
     _write_(&_value, 2, fp);
 }
 
-void JpgCompress::_write_(const void* p, int byteSize, FILE* fp)
+void JpgCompress::_write_(const void* p, int byteSize, QFile* fp)
 {
-    fwrite(p, 1, byteSize, fp);
+//    fwrite(p, 1, byteSize, fp);
+
+    fp->write((char*)p,byteSize);
+    resultSize += byteSize;
 }
 
 void JpgCompress::doHuffmanEncoding(const short* DU,short& prevDC,const BitString* HTDC
@@ -441,7 +716,20 @@ void JpgCompress::doHuffmanEncoding(const short* DU,short& prevDC,const BitStrin
     bitStringCounts = index;
 }
 
-void JpgCompress::_write_bitstring_(const BitString* bs, int counts, int& newByte, int& newBytePos, FILE* fp)
+int JpgCompress::getValue(JpgCompress::BitString bitCode)
+{
+    int result;
+
+
+    return result;
+}
+
+void JpgCompress::doHuffManDecoding(const short *DU, short &prevDC, const JpgCompress::BitString *HTDC, const JpgCompress::BitString *HTAC, JpgCompress::BitString *outputBitString, int &bitStringCounts)
+{
+
+}
+
+void JpgCompress::_write_bitstring_(const BitString* bs, int counts, int& newByte, int& newBytePos, QFile* fp)
 {
     unsigned short mask[] = {1,2,4,8,16,32,64,128,256,512,1024,2048,4096,8192,16384,32768};
 
@@ -524,7 +812,7 @@ void JpgCompress::foword_FDC(const char* channel_data, short* fdc_data)
     }
 }
 
-void JpgCompress::_write_jpeg_header(FILE* fp)
+void JpgCompress::_write_jpeg_header(QFile* fp)
 {
     //SOI
     _write_word_(0xFFD8, fp);		// marker = 0xFFD8
@@ -555,11 +843,8 @@ void JpgCompress::_write_jpeg_header(FILE* fp)
     _write_word_(0xFFC0, fp);			//marker = 0xFFC0
     _write_word_(17, fp);				//length = 17 for a truecolor YCbCr JPG
     _write_byte_(8, fp);				//precision = 8: 8 bits/sample
-    QImage jpg;
-    jpg.load(imgPathName);
-    int width = jpg.width(), height = jpg.height();
-    _write_word_(height&0xFFFF, fp);	//height
-    _write_word_(width&0xFFFF, fp);	//width
+    _write_word_(m_height_real&0xFFFF, fp);	//height
+    _write_word_(m_width_real&0xFFFF, fp);	//width
     _write_byte_(3, fp);				//nrofcomponents = 3: We encode a truecolor JPG
 
     _write_byte_(1, fp);				//IdY = 1

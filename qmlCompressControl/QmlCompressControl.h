@@ -37,19 +37,19 @@ public:
     Q_INVOKABLE bool compress();
 
 signals:
-    void returnIsRuning(const bool &isRuning, const int now, const int total);
+    void returnIsRuning(const bool &isRuning, const int now, const int total,
+                        QString time="" ,QString orignalSize="", QString resultSize="", QString ratio="");
 
 protected:
     void on_deleteImgControl();
 
 private:
     QStringList imgPathNameList;
-
     QVector<ImgControlBase*> vImgCompress;
-
     MyFile myFile;
-
     int quality;
+
+    QTime time;
 };
 
 #endif // QMLCOMPRESSCONTROL_H

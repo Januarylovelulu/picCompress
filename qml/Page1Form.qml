@@ -239,6 +239,12 @@ Page {
                     busyText.text = "正在压缩图片\n压缩进度: " + now + " / " + total;
                     if(isRuning === false){
                         successPopup.open();
+                        popupText.text = "所有的图片文件已经压缩完成\n"+
+                                "已经保存到图片所在的文件夹中\n"+
+                                "并命名为\"图片名+_Compress\"\n\n"+
+                                "总耗时:"+time+"\n"+
+                                "压缩前:"+orignalSize+"  压缩后:"+resultSize+"\n"+
+                                " 压缩率:"+ratio;
                     }
                 }
             }
@@ -257,12 +263,13 @@ Page {
     // 压缩成功提示框
     Popup {
         id: successPopup
-        width: 320
-        height: 220
+        width: 360
+        height: 250
         x: (root.width-width)/2
         y: (root.height-height)/2
         modal: true
         Text {
+            id: popupText
             anchors.horizontalCenter: parent.horizontalCenter
             y: (parent.height-height-okButton.height)/2
             color: parent.Material.theme === Material.Dark ? "white":"#303030"

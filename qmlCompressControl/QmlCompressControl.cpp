@@ -76,17 +76,10 @@ bool QmlCompressControl::isDirectory(QString path)
 
 bool QmlCompressControl::checkImage(QString imgPathName)
 {
-    // 如果名称为空或者不是png文件
-    if(ImgControlBase::getImgType(imgPathName)==ImgControlBase::PNG
-            && PngCompress::isPng(ImgControlBase::qmlPath_to_QtPath(imgPathName))){
-        return true;
-    }
-    else if(ImgControlBase::getImgType(imgPathName)==ImgControlBase::JPG
-            && JpgCompress::isJPG(ImgControlBase::qmlPath_to_QtPath(imgPathName))){
-        return true;
-    }
-    else{
-        return false;
+    switch (ImgControlBase::getImgType(imgPathName)) {
+    case ImgControlBase::PNG:return PngCompress::isPng(ImgControlBase::qmlPath_to_QtPath(imgPathName));
+    case ImgControlBase::JPG:return JpgCompress::isJPG(ImgControlBase::qmlPath_to_QtPath(imgPathName));
+    default:return false;
     }
 }
 
@@ -100,6 +93,7 @@ bool QmlCompressControl::compress()
     if(imgPathNameList.empty())
         return false;
 
+    time.restart();
     returnIsRuning(true, 0, imgPathNameList.size());
     for(QString imgPathName : imgPathNameList){
         ImgControlBase *imgCompressBase;
@@ -118,6 +112,13 @@ bool QmlCompressControl::compress()
 void QmlCompressControl::on_deleteImgControl()
 {
     ImgControlBase *imgCompressBase = qobject_cast<ImgControlBase*>(sender());
+
+    static qint64 originalSize = 0, resultSize = 0;
+    originalSize += imgCompressBase->getOriginalSize();
+    resultSize += imgCompressBase->getResultSize();
+
+    qDebug()<<imgCompressBase->getOriginalSize()<<"  "<<imgCompressBase->getResultSize();
+
     disconnect(imgCompressBase,&ImgControlBase::finished,this,&QmlCompressControl::on_deleteImgControl);
     delete imgCompressBase;
     for(auto &p : vImgCompress){
@@ -131,8 +132,25 @@ void QmlCompressControl::on_deleteImgControl()
     }
 
     if(now == imgPathNameList.size()){
-        returnIsRuning(false, now, imgPathNameList.size());
+        QString ratio = QString::number((double)(originalSize-resultSize)/(double)originalSize*100,'f',2)+"%";
+        QString original,result;
+        if(originalSize>1024*1024){
+            original = QString::number((double)originalSize/1024.0/1024.0,'f',3)+"MB";
+            result = QString::number((double)resultSize/1024.0/1024.0,'f',3)+"MB";
+        }
+        else if(originalSize>1024){
+            original = QString::number((double)originalSize/1024.0,'f',3)+"KB";
+            result = QString::number((double)resultSize/1024.0,'f',3)+"KB";
+        }
+        else{
+            original = QString::number(originalSize)+"B";
+            result = QString::number(resultSize)+"B";
+        }
+        returnIsRuning(false, now, imgPathNameList.size(),
+                       QString::number(time.elapsed()/1000.0)+"s",original,result,ratio);
         vImgCompress.clear();
+        originalSize = 0;
+        resultSize = 0;
     }
     else{
         returnIsRuning(true, now, imgPathNameList.size());

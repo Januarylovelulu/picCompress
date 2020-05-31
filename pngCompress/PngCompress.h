@@ -30,7 +30,7 @@ public:
     bool checkImage(QString imgPathName);
 
 protected:
-    bool readImg(QString imgPathName = "");
+    bool readImg(QString imgPathName);
 
     bool initialData();
     void run();

@@ -31,6 +31,14 @@ protected:
     virtual bool initialData() = 0;
     virtual void run() = 0;
 
+public:
+    qint64 getOriginalSize(){return originalSize;}
+    qint64 getResultSize(){return resultSize;}
+
+protected:
+    qint64 originalSize = 0;
+    qint64 resultSize = 0;
+
 signals:
 
 public:

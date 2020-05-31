@@ -33,7 +33,11 @@ bool PngCompress::compress(QString imgPathName)
     
     QString from=imgPathName,to=imgPathName;
     to.replace(".png","_Compressed.png",Qt::CaseInsensitive);
-    JQZopfli::OptimizeResult result = JQZopfli::optimize(from,to);
+    JQZopfli::optimize(from,to);
+
+    QFileInfo finfo1(from),finfo2(to);
+    originalSize = finfo1.size();
+    resultSize = finfo2.size();
 
     return true;
 }
