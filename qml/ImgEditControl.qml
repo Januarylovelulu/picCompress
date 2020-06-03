@@ -19,6 +19,8 @@ Item{
         //        flat: true
         anchors.centerIn: parent
         text: qsTr("选择或拖入图片")
+        ToolTip.visible: hovered
+        ToolTip.text: qsTr("选择图片文件，以导入到程序中")
         z: 50
 
         FileDialog {
@@ -61,6 +63,7 @@ Item{
         z: 1
     }
 
+    // 缩略图
     Rectangle{
         width: img.width >= img.height ? 88 : 88*img.width/img.height
         height: img.height > img.width ? 88 : 88*img.height/img.width
@@ -194,6 +197,117 @@ Item{
                     img.scale = 0.1
             }
         }
+    }
+
+    // 右侧工具栏
+    property bool bMenuShown: false
+    Rectangle {
+        id: menuTool
+        width: 80
+        height: parent.height
+        opacity: 0.75
+        color: parent.Material.theme === Material.Dark ? "#606060" : "white"
+        z: 16
+
+        Button {
+            id: menuButton
+            width: 40
+            height: 48
+            anchors.verticalCenter: parent.verticalCenter
+            x: -width
+            text: "<"
+            onClicked: onMenu();
+        }
+
+        Rectangle {
+            width: parent.width*0.8
+            height: width
+            y: parent.height/3-height/2
+            x: parent.width*0.1
+            color: "#00000000"
+            Image {
+                id: imgLeft
+                anchors.fill: parent
+                fillMode: Image.PreserveAspectFit
+                source: "qrc:/image/left.png"
+            }
+            MouseArea {
+                anchors.fill: parent
+                hoverEnabled: true
+                onEntered: imgLeft.source = "qrc:/image/leftHover.png"
+                onPressed: imgLeft.source = "qrc:/image/leftPress.png"
+                onReleased: RotationAnimation{
+                    target: img
+                    from: img.rotation
+                    to: img.rotation-90 < 0 ? 270 : img.rotation-90
+                    duration: 200
+                    direction: RotationAnimation.Counterclockwise
+                    onStarted: {
+                        imgLeft.source = "qrc:/image/leftHover.png"
+                    }
+                }
+                onExited: imgLeft.source = "qrc:/image/left.png"
+            }
+        }
+
+        Rectangle {
+            width: parent.width*0.8
+            height: width
+            y: parent.height*2/3-height/2
+            x: parent.width*0.1
+            color: "#00000000"
+            Image {
+                id: imgRight
+                anchors.fill: parent
+                fillMode: Image.PreserveAspectFit
+                source: "qrc:/image/right.png"
+            }
+            MouseArea {
+                anchors.fill: parent
+                hoverEnabled: true
+                onEntered: imgRight.source = "qrc:/image/rightHover.png"
+                onPressed: imgRight.source = "qrc:/image/rightPress.png"
+                onReleased: RotationAnimation{
+                    target: img
+                    from: img.rotation
+                    to: img.rotation+90 > 270 ? 0 : img.rotation+90
+                    duration: 200
+                    direction: RotationAnimation.Clockwise
+                    onStarted: {
+                        imgRight.source = "qrc:/image/rightHover.png"
+                    }
+                }
+                onExited: imgRight.source = "qrc:/image/right.png"
+            }
+        }
+
+        transform: Translate {
+            id: menuTranslate
+            x: width
+            Behavior on x {
+                NumberAnimation {
+                    duration: 400;
+                    easing.type: Easing.OutQuad
+                }
+            }
+        }
+    }
+    MouseArea {
+        id: menuArea
+        z: -1
+        x: 0
+        y: 0
+        width: parent.width - menuTool.width
+        height: parent.height
+        enabled: bMenuShown
+        onClicked: onMenu();
+    }
+
+    function onMenu(){
+        menuTranslate.x = bMenuShown ? width : width-menuTool.width;
+        menuButton.text = bMenuShown ? "<" : ">";
+        menuArea.z = bMenuShown ? -1 : 16;
+        bMenuShown = !bMenuShown;
     }
 
     function addPicture(path){

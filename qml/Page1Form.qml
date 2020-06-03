@@ -107,6 +107,8 @@ Page {
             anchors.verticalCenter: parent.verticalCenter
             x: 15
             text: qsTr("添加图片")
+            ToolTip.visible: hovered
+            ToolTip.text: qsTr("选择图片文件，以导入到程序中")
             FileDialog {
                 id: fd
                 title: "选择文件"
@@ -132,6 +134,8 @@ Page {
             anchors.left: addPic.right
             anchors.leftMargin: addPic.x
             text: qsTr("添加文件夹")
+            ToolTip.visible: hovered
+            ToolTip.text: qsTr("选择文件夹，以导入文件夹中所有的图片")
 
             FileDialog {
                 id: fds
@@ -160,10 +164,13 @@ Page {
             anchors.left: addDir.right
             anchors.leftMargin: addPic.x
             text: qsTr("清除图片")
+            ToolTip.visible: hovered
+            ToolTip.text: qsTr("清除已经导入的图片")
             onClicked: {
                 qmlCompressControl.clear();
                 imgControlView.model = qmlCompressControl.getImgPathNameList();
                 noticeText.opacity = 1;
+                compress.toolTipText = "请先导入图片";
             }
         }
         Text {
@@ -211,15 +218,21 @@ Page {
             anchors.right: compress.left
             anchors.rightMargin: addPic.x
             text: qsTr("改变主题")
+            ToolTip.visible: hovered
+            ToolTip.text: qsTr("在深色主题、浅色主题中切换")
             onClicked: {
                 changeTheme();
             }
         }
         Button {
+            property string toolTipText: "请先导入图片"
+
             id: compress
             anchors.verticalCenter: parent.verticalCenter
             x: parent.width-width-addPic.x
             text: qsTr("开始压缩")
+            ToolTip.visible: hovered
+            ToolTip.text: toolTipText
 
             onClicked: {
                 if(qmlCompressControl.getImgPathNameList().length > 0){
@@ -294,6 +307,7 @@ Page {
         if(qmlCompressControl.checkImage(pathName)){
             // 如果列表里没有则添加
             if(qmlCompressControl.getImgPathNameList().indexOf(pathName) === -1){
+                compress.toolTipText = "点击按钮，开始压缩图片";
                 qmlCompressControl.push(pathName);
                 noticeText.opacity = 0;
             }

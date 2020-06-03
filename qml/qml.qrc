@@ -15,5 +15,11 @@
     <qresource prefix="/image">
         <file alias="bgPicDark.png">../img/bgPicDark.png</file>
         <file alias="bgPicLight.png">../img/bgPicLight.png</file>
+        <file alias="left.png">../img/left.png</file>
+        <file alias="leftHover.png">../img/leftHover.png</file>
+        <file alias="leftPress.png">../img/leftPress.png</file>
+        <file alias="right.png">../img/right.png</file>
+        <file alias="rightHover.png">../img/rightHover.png</file>
+        <file alias="rightPress.png">../img/rightPress.png</file>
     </qresource>
 </RCC>
