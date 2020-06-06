@@ -171,7 +171,7 @@ Item{
         onDoubleClicked: {
             console.log(img.width+" "+img.height+"   "+imgControl.width+" "+imgControl.height)
             console.log(img.x+" "+img.y+"   "+imgControl.x+" "+imgControl.y)
-            console.log(img.scale)
+            console.log(menuArea.z)
         }
 
         //使用鼠标滚轮缩放
@@ -216,6 +216,8 @@ Item{
             anchors.verticalCenter: parent.verticalCenter
             x: -width
             text: "<"
+            ToolTip.visible: hovered
+            ToolTip.text: qsTr("展开工具栏")
             onClicked: onMenu();
         }
 
@@ -240,11 +242,10 @@ Item{
                     target: img
                     from: img.rotation
                     to: img.rotation-90 < 0 ? 270 : img.rotation-90
-                    duration: 200
+                    duration: 160
                     direction: RotationAnimation.Counterclockwise
-                    onStarted: {
-                        imgLeft.source = "qrc:/image/leftHover.png"
-                    }
+                    onStarted: imgLeft.source = "qrc:/image/leftHover.png"
+                    onFinished: img.source == "" ? img.rotation = 0 : 1;
                 }
                 onExited: imgLeft.source = "qrc:/image/left.png"
             }
@@ -271,11 +272,10 @@ Item{
                     target: img
                     from: img.rotation
                     to: img.rotation+90 > 270 ? 0 : img.rotation+90
-                    duration: 200
+                    duration: 160
                     direction: RotationAnimation.Clockwise
-                    onStarted: {
-                        imgRight.source = "qrc:/image/rightHover.png"
-                    }
+                    onStarted: imgRight.source = "qrc:/image/rightHover.png"
+                    onFinished: img.source == "" ? img.rotation = 0 : 1;
                 }
                 onExited: imgRight.source = "qrc:/image/right.png"
             }

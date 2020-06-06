@@ -613,8 +613,7 @@ void JpgCompress::initQualityTables(int quality_scale)
     if(quality_scale<=0) quality_scale=1;
     if(quality_scale>=100) quality_scale=100;
 
-    for(int i=0; i<64; i++)
-    {
+    for(int i=0; i<64; i++) {
         int temp = ((int)(Luminance_Quantization_Table[i] * quality_scale + 50) / 100);
         if (temp<=0) temp = 1;
         if (temp>0xFF) temp = 0xFF;
@@ -632,10 +631,8 @@ void JpgCompress::computeHuffmanTable(const char* nr_codes, const unsigned char*
     unsigned char pos_in_table = 0;
     unsigned short code_value = 0;
 
-    for(int k = 1; k <= 16; k++)
-    {
-        for(int j = 1; j <= nr_codes[k-1]; j++)
-        {
+    for(int k = 1; k <= 16; k++) {
+        for(int j = 1; j <= nr_codes[k-1]; j++) {
             huffman_table[std_table[pos_in_table]].value = code_value;
             huffman_table[std_table[pos_in_table]].length = k;
             pos_in_table++;
@@ -678,8 +675,7 @@ void JpgCompress::doHuffmanEncoding(const short* DU,short& prevDC,const BitStrin
 
     if (dcDiff == 0)
         outputBitString[index++] = HTDC[0];
-    else
-    {
+    else{
         BitString bs = getBitCode(dcDiff);
 
         outputBitString[index++] = HTDC[bs.length];
